@@ -45,6 +45,12 @@ const Dashboard = () => {
                 description: "Emergency? Request an ambulance to your location immediately.",
                 image: "https://cdn-icons-png.flaticon.com/512/2892/2892962.png",
                 action: () => navigate('/ambulance/book')
+            },
+            {
+                title: "Health Tracker",
+                description: "Log your vitals like Glucose, BP, and Weight. Track your health trends.",
+                image: "https://cdn-icons-png.flaticon.com/512/2815/2815428.png",
+                action: () => navigate('/patient/health-tracker')
             }
         ];
     } else if (user?.role === 'doctor') {

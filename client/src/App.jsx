@@ -26,6 +26,8 @@ import UploadLabReport from './pages/UploadLabReport';
 import ViewReportsDoctor from './pages/ViewReportsDoctor';
 import SymptomChecker from './pages/SymptomChecker';
 import AmbulanceBooking from './pages/AmbulanceBooking';
+import HealthTracker from './pages/HealthTracker';
+import PatientVitals from './pages/PatientVitals';
 
 import useAutoLogout from './hooks/useAutoLogout';
 
@@ -118,6 +120,16 @@ function App() {
           <Route path="/ambulance/book" element={
             <ProtectedRoute>
               <AmbulanceBooking />
+            </ProtectedRoute>
+          } />
+          <Route path="/patient/health-tracker" element={
+            <ProtectedRoute>
+              <HealthTracker />
+            </ProtectedRoute>
+          } />
+          <Route path="/doctor/patient/:id/vitals" element={
+            <ProtectedRoute>
+              <PatientVitals />
             </ProtectedRoute>
           } />
         </Routes>
