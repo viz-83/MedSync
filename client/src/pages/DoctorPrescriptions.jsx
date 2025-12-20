@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import { FaFilePdf, FaEye, FaArrowLeft } from 'react-icons/fa';
 
 const DoctorPrescriptions = () => {
     const [prescriptions, setPrescriptions] = useState([]);
@@ -32,72 +36,95 @@ const DoctorPrescriptions = () => {
         fetchPrescriptions();
     }, []);
 
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background-light flex flex-col font-body">
             <Navbar />
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">Issued Prescriptions</h1>
-                    <button
+            <div className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-heading font-bold text-text-primary">Issued Prescriptions</h1>
+                        <p className="text-text-secondary mt-1">History of prescriptions issued by you.</p>
+                    </div>
+                    <Button
+                        variant="secondary"
                         onClick={() => navigate('/doctor/dashboard')}
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded hover:bg-gray-300"
+                        className="flex items-center"
                     >
-                        Back to Dashboard
-                    </button>
+                        <FaArrowLeft className="mr-2" /> Back to Dashboard
+                    </Button>
                 </div>
 
                 {loading ? (
-                    <p className="text-gray-500">Loading...</p>
+                    <div className="flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cta"></div>
+                    </div>
                 ) : error ? (
-                    <p className="text-red-500">{error}</p>
+                    <div className="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200">
+                        {error}
+                    </div>
                 ) : prescriptions.length === 0 ? (
-                    <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">
-                        You have not issued any prescriptions yet.
+                    <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-gray-200">
+                        <div className="text-5xl mb-4 text-gray-300">📝</div>
+                        <h3 className="text-xl font-bold text-text-primary">No prescriptions issued</h3>
+                        <p className="text-text-secondary mt-2">Any prescriptions you create will appear here.</p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-lg shadow overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Patient</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diagnosis</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {prescriptions.map((script) => (
-                                    <tr key={script._id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {new Date(script.createdAt).toLocaleDateString()}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {script.patient?.name || 'Unknown'}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-900">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        {prescriptions.map((script) => (
+                            <Card key={script._id} className="hover:shadow-lg transition-all duration-300 flex flex-col h-full border-gray-100">
+                                <div className="p-6 flex flex-col h-full">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="flex items-center gap-3">
+                                            <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold">
+                                                {script.patient?.name?.charAt(0) || '?'}
+                                            </div>
+                                            <div>
+                                                <h3 className="font-bold text-text-primary">{script.patient?.name || 'Unknown User'}</h3>
+                                                <p className="text-xs text-text-secondary">{formatDate(script.createdAt)}</p>
+                                            </div>
+                                        </div>
+                                        <Badge variant="success" className="text-xs">Issued</Badge>
+                                    </div>
+
+                                    <div className="flex-1 mb-6">
+                                        <p className="text-sm text-text-muted font-bold uppercase tracking-wider mb-1">Diagnosis</p>
+                                        <p className="text-text-primary line-clamp-2 md:line-clamp-3">
                                             {script.diagnosis}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            {script.pdfUrl ? (
-                                                <a
-                                                    href={`http://localhost:5000${script.pdfUrl}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                                >
-                                                    <svg className="mr-2 -ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                    </svg>
-                                                    View PDF
-                                                </a>
-                                            ) : (
-                                                <span className="text-gray-400">Processing...</span>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                                        </p>
+                                    </div>
+
+                                    <div className="mt-auto border-t border-gray-50 pt-4 flex gap-3">
+                                        {script.pdfUrl && (
+                                            <a
+                                                href={`http://localhost:5000${script.pdfUrl}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="flex-1"
+                                            >
+                                                <Button variant="primary" className="w-full text-sm">
+                                                    <FaFilePdf className="mr-2" /> PDF
+                                                </Button>
+                                            </a>
+                                        )}
+                                        <Button
+                                            variant="secondary"
+                                            className="flex-1 text-sm"
+                                            onClick={() => navigate(`/doctor/prescriptions/${script._id}`)} // Assuming detail view exist or we can make one
+                                        >
+                                            <FaEye className="mr-2" /> View
+                                        </Button>
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
                     </div>
                 )}
             </div>

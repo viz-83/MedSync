@@ -5,6 +5,8 @@ import { Chat, Channel, Window, ChannelHeader, MessageList, MessageInput, Thread
 import 'stream-chat-react/dist/css/v2/index.css';
 import { useStreamSession } from '../context/StreamSessionContext';
 import axios from '../utils/axiosInstance';
+import Button from '../components/ui/Button';
+import { FaArrowLeft } from 'react-icons/fa';
 
 const apiKey = 'p6yehc4e2xgg'; // Replace with actual key or env var
 
@@ -40,7 +42,7 @@ const ChatPage = () => {
                 } catch (error) {
                     console.error('Error fetching token:', error);
                     alert('Failed to join chat. Please try again.');
-                    navigate('/dashboard');
+                    navigate('/');
                     return;
                 }
             }
@@ -100,28 +102,36 @@ const ChatPage = () => {
         };
     }, [appointmentId, sessionData, setSession, navigate]);
 
-    if (loading) return <div className="text-center mt-20">Loading chat...</div>;
+    if (loading) return (
+        <div className="flex justify-center items-center h-screen bg-background-light">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cta"></div>
+        </div>
+    );
 
     const isChatExpired = sessionData?.postConsultChatExpiresAt && new Date() > new Date(sessionData.postConsultChatExpiresAt);
 
     return (
-        <div className="h-screen flex flex-col">
-            <div className="bg-white shadow p-4 flex justify-between items-center">
-                <h2 className="text-xl font-bold">Appointment Chat</h2>
-                <button onClick={() => navigate('/dashboard')} className="text-blue-600 hover:underline">Back to Dashboard</button>
+        <div className="h-screen flex flex-col font-body bg-background-light">
+            <div className="bg-white shadow-sm p-4 flex justify-between items-center border-b border-gray-100 z-10">
+                <div className="flex items-center gap-3">
+                    <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="pl-0 text-text-secondary hover:text-cta">
+                        <FaArrowLeft className="mr-1" /> Back
+                    </Button>
+                    <h2 className="text-lg font-heading font-bold text-text-primary">Appointment Chat</h2>
+                </div>
             </div>
-            <div className="flex-1 overflow-hidden">
+            <div className="flex-1 overflow-hidden" style={{ height: 'calc(100vh - 64px)' }}>
                 <Chat client={chatClient} theme="messaging light">
                     <Channel channel={channel}>
                         <Window>
                             <ChannelHeader />
                             <MessageList />
                             {isChatExpired ? (
-                                <div className="p-4 bg-gray-100 text-center text-gray-500">
-                                    Post-consultation chat window has closed.
+                                <div className="p-4 bg-gray-100 text-center text-gray-500 border-t border-gray-200">
+                                    This chat session has expired. You cannot send new messages.
                                 </div>
                             ) : (
-                                <MessageInput />
+                                <MessageInput focus />
                             )}
                         </Window>
                         <Thread />

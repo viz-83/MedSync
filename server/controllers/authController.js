@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const { StreamChat } = require('stream-chat');
 const RefreshToken = require('../models/RefreshToken');
+const logAudit = require('../utils/auditLogger');
 
 const streamClient = new StreamChat(process.env.STREAM_API_KEY, process.env.STREAM_API_SECRET);
 
@@ -17,49 +18,58 @@ const signToken = (id, role) => {
     });
 };
 
+const hashToken = (token) => crypto.createHash('sha256').update(token).digest('hex');
+
 const createSendToken = async (user, statusCode, res, isDoctorProfileComplete = false) => {
     const token = signToken(user._id, user.role);
 
     // Generate Refresh Token
-    const refreshToken = crypto.randomBytes(40).toString('hex');
+    const rawRefreshToken = crypto.randomBytes(40).toString('hex');
+    const hashedRefreshToken = hashToken(rawRefreshToken);
     const refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
 
-    // Save Refresh Token to DB
+    // Save HASHED Refresh Token to DB
     await RefreshToken.create({
         user: user._id,
-        token: refreshToken,
+        token: hashedRefreshToken,
         expiresAt: refreshTokenExpires
     });
+
+    const isProduction = process.env.NODE_ENV === 'production';
 
     const cookieOptions = {
         expires: new Date(Date.now() + 15 * 60 * 1000), // Match access token
         httpOnly: true,
-        secure: false, // Set to true in prod
-        sameSite: 'lax'
+        secure: isProduction,
+        sameSite: isProduction ? 'strict' : 'lax'
     };
 
     const refreshCookieOptions = {
         expires: refreshTokenExpires,
         httpOnly: true,
-        secure: false, // Set to true in prod
-        sameSite: 'lax',
+        secure: isProduction,
+        sameSite: isProduction ? 'strict' : 'lax', // Strict for same-site, Lax for dev if needed
         path: '/api/auth/refresh-token' // Restrict path
     };
 
     // Send Cookies
-    res.cookie('token', token, cookieOptions); // Access token in cookie (legacy/fallback)
-    res.cookie('refreshToken', refreshToken, refreshCookieOptions);
+    res.cookie('token', token, cookieOptions);
+    res.cookie('refreshToken', rawRefreshToken, refreshCookieOptions); // Send RAW token to user
 
     // Remove sensitive data from output
     user.password = undefined;
     user.otp = undefined;
+    user.loginAttempts = undefined;
+    user.loginLockedUntil = undefined;
+    user.otpAttempts = undefined;
+    user.otpLockedUntil = undefined;
 
     res.status(statusCode).json({
         status: 'success',
         token,
         user,
         isDoctorProfileComplete,
-        data: { user } // keeping data.user just in case some other new code expects it, but flat is primary
+        data: { user }
     });
 };
 
@@ -116,6 +126,13 @@ exports.signup = async (req, res) => {
         }
 
         res.status(201).json({ message: 'User registered. Please verify OTP.' });
+
+        // Audit Log
+        logAudit(req, {
+            user: null, // User not fully created/verified yet in session, or use 'user' obj if saving succeeded
+            action: 'SIGNUP_INITIATED',
+            details: { email, role }
+        });
     } catch (error) {
         console.error('Signup Error:', error);
         res.status(500).json({ message: error.message });
@@ -129,13 +146,36 @@ exports.verifyOTP = async (req, res) => {
 
         if (!user) return res.status(400).json({ message: 'User not found' });
         if (user.isVerified) return res.status(400).json({ message: 'User already verified' });
+
+        // 1. Check if OTP is locked
+        if (user.otpLockedUntil && user.otpLockedUntil > Date.now()) {
+            const waitTime = Math.ceil((user.otpLockedUntil - Date.now()) / 60000);
+            return res.status(429).json({ message: `OTP verification locked. Please try again in ${waitTime} minutes.` });
+        }
+
+        // 2. Validate OTP
         if (user.otp !== otp || user.otpExpires < Date.now()) {
+            // Increment Failed Attempts
+            user.otpAttempts += 1;
+
+            // Lock if attempts > 5
+            if (user.otpAttempts >= 5) {
+                user.otpLockedUntil = Date.now() + 15 * 60 * 1000; // 15 mins
+                user.otpAttempts = 0;
+                await user.save();
+                return res.status(429).json({ message: 'Too many failed OTP attempts. Verification locked for 15 minutes.' });
+            }
+
+            await user.save();
             return res.status(400).json({ message: 'Invalid or expired OTP' });
         }
 
+        // 3. Success - Reset Fields
         user.isVerified = true;
         user.otp = undefined;
         user.otpExpires = undefined;
+        user.otpAttempts = 0;
+        user.otpLockedUntil = undefined;
         await user.save();
 
         let isDoctorProfileComplete = false;
@@ -143,6 +183,13 @@ exports.verifyOTP = async (req, res) => {
             const doctor = await Doctor.findOne({ user: user._id });
             if (doctor) isDoctorProfileComplete = true;
         }
+
+        // Audit Log
+        logAudit(req, {
+            user: user,
+            action: 'OTP_VERIFIED',
+            details: { email: user.email }
+        });
 
         createSendToken(user, 200, res, isDoctorProfileComplete);
     } catch (error) {
@@ -156,10 +203,39 @@ exports.login = async (req, res) => {
         const user = await User.findOne({ email });
 
         if (!user) return res.status(400).json({ message: 'Invalid credentials' });
+
+        // 1. Check if account is locked
+        if (user.loginLockedUntil && user.loginLockedUntil > Date.now()) {
+            const waitTime = Math.ceil((user.loginLockedUntil - Date.now()) / 60000);
+            return res.status(429).json({ message: `Account locked. Please try again in ${waitTime} minutes.` });
+        }
+
+        // 2. Check Password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            // Increment Failed Attempts
+            user.loginAttempts += 1;
+
+            // Lock if attempts > 5
+            if (user.loginAttempts >= 5) {
+                user.loginLockedUntil = Date.now() + 15 * 60 * 1000; // 15 mins
+                user.loginAttempts = 0; // Reset attempts after locking (or keep 5?) typically reset on lock expiry, but simplifying by keeping attempts high or resetting on successful login is better. Resetting on lock expiry requires a cron or logic check.
+                // Simple strategy: Just set lock time. If they come back after 15 mins, lock is gone.
+                // But we should reset attempts on successful login.
+                await user.save();
+                return res.status(429).json({ message: 'Too many failed login attempts. Account locked for 15 minutes.' });
+            }
+
+            await user.save();
+            return res.status(400).json({ message: 'Invalid credentials' });
+        }
+
         if (!user.isVerified) return res.status(400).json({ message: 'Please verify your email first' });
 
-        const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
+        // 3. Reset Locking Fields on Success
+        user.loginAttempts = 0;
+        user.loginLockedUntil = undefined;
+        await user.save();
 
         // Sync user to Stream on login
         try {
@@ -178,6 +254,13 @@ exports.login = async (req, res) => {
             if (doctor) isDoctorProfileComplete = true;
         }
 
+        // Audit Log
+        logAudit(req, {
+            user: user,
+            action: 'LOGIN',
+            details: { method: 'password' }
+        });
+
         createSendToken(user, 200, res, isDoctorProfileComplete);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -186,17 +269,35 @@ exports.login = async (req, res) => {
 
 exports.refreshToken = async (req, res) => {
     try {
-        const refreshToken = req.cookies.refreshToken;
-        if (!refreshToken) {
+        const { refreshToken } = req.body; // Frontend sends refresh token in body now via axiosInstance? No, cookie.
+        // Wait, earlier I implemented axiosInstance which calls POST /refresh-token.
+        // And backend uses req.cookies.refreshToken.
+        const tokenFromCookie = req.cookies.refreshToken;
+
+        if (!tokenFromCookie) {
             return res.status(401).json({ message: 'No refresh token provided' });
         }
 
-        const tokenDoc = await RefreshToken.findOne({ token: refreshToken });
-        if (!tokenDoc || tokenDoc.isExpired || tokenDoc.revoked) {
-            // If token invalid/revoked, clear cookies and force logout
+        // Hash the incoming token to match DB
+        const hashedToken = hashToken(tokenFromCookie);
+
+        const tokenDoc = await RefreshToken.findOne({ token: hashedToken });
+
+        // Reuse Detection / Token Rotation Logic
+        if (!tokenDoc) {
+            // If token not found, it might be tampered or already rotated/deleted.
+            // Just clear and fail.
             res.clearCookie('token');
             res.clearCookie('refreshToken', { path: '/api/auth/refresh-token' });
-            return res.status(403).json({ message: 'Invalid or expired refresh token' });
+            return res.status(403).json({ message: 'Invalid refresh token' });
+        }
+
+        if (tokenDoc.isExpired || tokenDoc.revoked) {
+            // Security: If a revoked token is used, it might be a theft.
+            // Ideally, we should revoke all tokens for this user family, but for now simple 403.
+            res.clearCookie('token');
+            res.clearCookie('refreshToken', { path: '/api/auth/refresh-token' });
+            return res.status(403).json({ message: 'RefreshToken is expired or revoked' });
         }
 
         // Get user
@@ -207,8 +308,7 @@ exports.refreshToken = async (req, res) => {
 
         // Rotate Token (Revoke old, create new)
         tokenDoc.revoked = Date.now();
-        tokenDoc.replacedByToken = 'new_generated_in_createSendToken'; // Placeholder, actual rotation happens in createSendToken logic? 
-        // Actually createSendToken creates a BRAND NEW record. We just mark old one as revoked.
+        tokenDoc.replacedByToken = 'new_generated_in_createSendToken';
         await tokenDoc.save();
 
         let isDoctorProfileComplete = false;
@@ -217,7 +317,7 @@ exports.refreshToken = async (req, res) => {
             if (doctor) isDoctorProfileComplete = true;
         }
 
-        // Issue new tokens
+        // Issue new tokens (creates new DB entry)
         createSendToken(user, 200, res, isDoctorProfileComplete);
 
     } catch (error) {
@@ -225,6 +325,34 @@ exports.refreshToken = async (req, res) => {
         res.status(500).json({ message: 'Internal server error' });
     }
 };
+
+exports.logout = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        if (refreshToken) {
+            const hashedToken = hashToken(refreshToken);
+            // Revoke token in DB
+            await RefreshToken.findOneAndUpdate({ token: hashedToken }, { revoked: Date.now() });
+        }
+
+        res.clearCookie('token');
+        res.clearCookie('refreshToken', { path: '/api/auth/refresh-token' });
+
+        // Audit Log
+        if (req.user) {
+            logAudit(req, {
+                user: req.user,
+                action: 'LOGOUT',
+                details: { method: 'explicit_logout' }
+            });
+        }
+
+        res.status(200).json({ status: 'success', message: 'Logged out successfully' });
+    } catch (error) {
+        res.status(500).json({ message: 'Logout failed', error: error.message });
+    }
+};
+
 exports.getAllUsers = async (req, res) => {
     try {
         const users = await User.find({ _id: { $ne: req.body.userId } }).select('-password -otp -otpExpires');
@@ -237,10 +365,7 @@ exports.getAllUsers = async (req, res) => {
 exports.protect = async (req, res, next) => {
     try {
         let token;
-
-        console.log('--- Protect Middleware Debug ---');
-        console.log('Headers:', req.headers);
-        console.log('Cookies:', req.cookies);
+        // console.log('headers', req.headers); // Remove noisy logs in production
 
         if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
             token = req.headers.authorization.split(' ')[1];
@@ -249,23 +374,24 @@ exports.protect = async (req, res, next) => {
         }
 
         if (!token) {
-            console.log('No token found!');
             return res.status(401).json({ message: 'You are not logged in! Please log in to get access.' });
         }
 
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        console.log('Decoded Token:', decoded);
 
         const currentUser = await User.findById(decoded.id);
         if (!currentUser) {
-            console.log('User not found for token');
             return res.status(401).json({ message: 'The user belonging to this token no longer does exist.' });
+        }
+
+        if (currentUser.loginLockedUntil && currentUser.loginLockedUntil > Date.now()) {
+            return res.status(401).json({ message: 'Account is locked. Please contact support or try later.' });
         }
 
         req.user = currentUser;
         next();
     } catch (error) {
-        console.error('Protect Middleware Error:', error);
+        // console.error('Protect Middleware Error:', error);
         res.status(401).json({ message: 'Invalid token. Please log in again.' });
     }
 };
@@ -274,6 +400,13 @@ exports.restrictTo = (...roles) => {
     return (req, res, next) => {
         // roles ['admin', 'doctor']. role='user'
         if (!roles.includes(req.user.role)) {
+            // Audit Unauthorized Access Attempt
+            logAudit(req, {
+                user: req.user,
+                action: 'UNAUTHORIZED_ACCESS_ATTEMPT',
+                resourceType: 'API_ROUTE',
+                details: { requiredRoles: roles, userRole: req.user.role, path: req.originalUrl }
+            });
             return res.status(403).json({ message: 'You do not have permission to perform this action' });
         }
         next();

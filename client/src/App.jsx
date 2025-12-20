@@ -36,21 +36,29 @@ const AutoLogoutHandler = () => {
   return null;
 };
 
+import Home from './pages/Home';
+
+// ... imports ...
+
 function App() {
   return (
     <Router>
       <AutoLogoutHandler />
       <StreamSessionProvider>
         <Routes>
-          <Route path="/" element={<Landing />} />
+          {/* Unified Home Route */}
+          <Route path="/" element={<Home />} />
+
           <Route path="/signup" element={<Signup />} />
           <Route path="/verify-otp" element={<VerifyOTP />} />
           <Route path="/login" element={<Login />} />
-          <Route path="/dashboard" element={
-            <ProtectedRoute>
-              <Dashboard />
-            </ProtectedRoute>
-          } />
+
+          {/* /dashboard is now handled by / (Home) if logged in. 
+              Keeping /dashboard as a redirect or alias is optional, 
+              but usually cleaner to remove or redirect if used by bookmarks.
+              For now, we remove it and rely on Home. 
+          */}
+
           <Route path="/doctor/onboarding" element={
             <ProtectedRoute>
               <DoctorOnboarding />

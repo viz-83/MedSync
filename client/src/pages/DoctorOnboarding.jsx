@@ -2,6 +2,10 @@ import React, { useState } from 'react';
 import axios from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Input from '../components/ui/Input';
+import Badge from '../components/ui/Badge';
 
 const DoctorOnboarding = () => {
     const navigate = useNavigate();
@@ -15,6 +19,7 @@ const DoctorOnboarding = () => {
         coordinates: { lat: null, lng: null }
     });
     const [loading, setLoading] = useState(false);
+    const [locationStatus, setLocationStatus] = useState('idle'); // idle, loading, success, error
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -22,6 +27,7 @@ const DoctorOnboarding = () => {
 
     const handleUseLocation = () => {
         if (navigator.geolocation) {
+            setLocationStatus('loading');
             navigator.geolocation.getCurrentPosition((position) => {
                 setFormData({
                     ...formData,
@@ -30,10 +36,10 @@ const DoctorOnboarding = () => {
                         lng: position.coords.longitude
                     }
                 });
-                alert('Location fetched successfully!');
+                setLocationStatus('success');
             }, (error) => {
                 console.error('Error fetching location:', error);
-                alert('Unable to fetch location. Please enter manually or try again.');
+                setLocationStatus('error');
             });
         } else {
             alert('Geolocation is not supported by this browser.');
@@ -51,7 +57,6 @@ const DoctorOnboarding = () => {
             });
 
             if (data.status === 'success') {
-                alert('Profile updated successfully!');
                 navigate('/doctor/dashboard'); // Redirect to doctor dashboard
             }
         } catch (error) {
@@ -63,120 +68,123 @@ const DoctorOnboarding = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background-light flex flex-col font-body">
             <Navbar />
-            <div className="max-w-3xl mx-auto px-4 py-8">
-                <div className="bg-white rounded-lg shadow-md p-8">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-6 text-center">Complete Your Doctor Profile</h1>
-                    <p className="text-gray-600 mb-8 text-center">Please provide your professional details to be listed on MedSync.</p>
+            <div className="flex-1 flex flex-col items-center justify-center p-4">
+                <Card className="w-full max-w-3xl p-8 md:p-10 shadow-xl border-t-4 border-cta">
+                    <div className="text-center mb-8">
+                        <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm">
+                            👨‍⚕️
+                        </div>
+                        <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">Complete Your Profile</h1>
+                        <p className="text-text-secondary max-w-md mx-auto">
+                            Please provide your professional details to be listed on MedSync and start accepting appointments.
+                        </p>
+                    </div>
 
                     <form onSubmit={handleSubmit} className="space-y-6">
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
-                            <select
-                                name="specialization"
-                                value={formData.specialization}
-                                onChange={handleChange}
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                required
-                            >
-                                <option value="">Select Specialization</option>
-                                <option value="Cardiologist">Cardiologist</option>
-                                <option value="Dermatologist">Dermatologist</option>
-                                <option value="Pediatrician">Pediatrician</option>
-                                <option value="Neurologist">Neurologist</option>
-                                <option value="General Physician">General Physician</option>
-                                <option value="Orthopedic">Orthopedic</option>
-                                <option value="Dentist">Dentist</option>
-                            </select>
-                        </div>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label className="block text-sm font-medium text-text-primary mb-2">Specialization</label>
+                                <select
+                                    name="specialization"
+                                    value={formData.specialization}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-cta focus:ring-2 focus:ring-cta/10 bg-gray-50/50 transition-all outline-none"
+                                    required
+                                >
+                                    <option value="">Select Specialization</option>
+                                    <option value="Cardiologist">Cardiologist</option>
+                                    <option value="Dermatologist">Dermatologist</option>
+                                    <option value="Pediatrician">Pediatrician</option>
+                                    <option value="Neurologist">Neurologist</option>
+                                    <option value="General Physician">General Physician</option>
+                                    <option value="Orthopedic">Orthopedic</option>
+                                    <option value="Dentist">Dentist</option>
+                                </select>
+                            </div>
 
-                        <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Hospital / Clinic Name</label>
-                            <input
-                                type="text"
+                            <Input
+                                label="Hospital / Clinic Name"
                                 name="hospitalName"
                                 value={formData.hospitalName}
                                 onChange={handleChange}
                                 placeholder="e.g. City General Hospital"
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                                 required
                             />
                         </div>
 
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                                <input
-                                    type="text"
-                                    name="city"
-                                    value={formData.city}
-                                    onChange={handleChange}
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">State</label>
-                                <input
-                                    type="text"
-                                    name="state"
-                                    value={formData.state}
-                                    onChange={handleChange}
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Pincode</label>
-                                <input
-                                    type="text"
-                                    name="pincode"
-                                    value={formData.pincode}
-                                    onChange={handleChange}
-                                    className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                                    required
-                                />
-                            </div>
+                            <Input
+                                label="City"
+                                name="city"
+                                value={formData.city}
+                                onChange={handleChange}
+                                required
+                            />
+                            <Input
+                                label="State"
+                                name="state"
+                                value={formData.state}
+                                onChange={handleChange}
+                                required
+                            />
+                            <Input
+                                label="Pincode"
+                                name="pincode"
+                                value={formData.pincode}
+                                onChange={handleChange}
+                                required
+                            />
                         </div>
 
                         <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-1">Full Address</label>
+                            <label className="block text-sm font-medium text-text-primary mb-2">Full Address</label>
                             <textarea
                                 name="fullAddress"
                                 value={formData.fullAddress}
                                 onChange={handleChange}
                                 rows="3"
-                                className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:border-cta focus:ring-2 focus:ring-cta/10 bg-gray-50/50 transition-all outline-none resize-none"
                                 required
+                                placeholder="Enter complete clinic address..."
                             ></textarea>
                         </div>
 
-                        <div className="flex items-center justify-between bg-blue-50 p-4 rounded-lg border border-blue-100">
+                        <div className="flex items-center justify-between bg-blue-50 p-5 rounded-xl border border-blue-100">
                             <div>
-                                <p className="text-sm font-medium text-blue-800">Location Coordinates</p>
-                                <p className="text-xs text-blue-600">
-                                    {formData.coordinates.lat ? `Lat: ${formData.coordinates.lat}, Lng: ${formData.coordinates.lng}` : 'Not set'}
-                                </p>
+                                <p className="font-heading font-bold text-blue-800 mb-1">Clinic Location</p>
+                                <div className="flex items-center gap-2">
+                                    <span className="text-sm text-blue-600">
+                                        {formData.coordinates.lat
+                                            ? `Lat: ${formData.coordinates.lat.toFixed(4)}, Lng: ${formData.coordinates.lng.toFixed(4)}`
+                                            : 'Location not set'}
+                                    </span>
+                                    {locationStatus === 'success' && <Badge variant="success" className="text-xs">Saved</Badge>}
+                                    {locationStatus === 'error' && <Badge variant="danger" className="text-xs">Failed</Badge>}
+                                </div>
                             </div>
-                            <button
+                            <Button
                                 type="button"
                                 onClick={handleUseLocation}
-                                className="px-4 py-2 bg-white text-blue-600 border border-blue-200 rounded hover:bg-blue-50 transition text-sm font-medium"
+                                variant="secondary"
+                                disabled={locationStatus === 'loading'}
+                                className="text-sm"
                             >
-                                Use My Location
-                            </button>
+                                {locationStatus === 'loading' ? 'Locating...' : 'Use My Location'}
+                            </Button>
                         </div>
 
-                        <button
+                        <Button
                             type="submit"
                             disabled={loading}
-                            className="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-bold text-lg shadow-lg disabled:bg-blue-300"
+                            size="lg"
+                            className="w-full mt-4 shadow-lg shadow-cta/20"
                         >
-                            {loading ? 'Saving Profile...' : 'Save Profile'}
-                        </button>
+                            {loading ? 'Saving Profile...' : 'Complete Profile'}
+                        </Button>
                     </form>
-                </div>
+                </Card>
             </div>
         </div>
     );

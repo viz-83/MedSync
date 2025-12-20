@@ -3,6 +3,9 @@ import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
 import { useStreamSession } from '../context/StreamSessionContext';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
 
 const DoctorDashboard = () => {
     const [appointments, setAppointments] = useState([]);
@@ -11,9 +14,6 @@ const DoctorDashboard = () => {
     const { setSession } = useStreamSession();
 
     useEffect(() => {
-        // Note: Ideally we would have a specific endpoint for doctor's appointments
-        // For now, we'll reuse the 'my appointments' endpoint if the backend supports it for doctors too,
-        // or we might need to add a specific one. Assuming 'getMyAppointments' works for the logged-in user regardless of role.
         const fetchAppointments = async () => {
             try {
                 const token = localStorage.getItem('token');
@@ -76,86 +76,135 @@ const DoctorDashboard = () => {
         }
     };
 
+    const getStatusVariant = (status) => {
+        switch (status?.toLowerCase()) {
+            case 'scheduled': return 'success';
+            case 'completed': return 'default';
+            case 'cancelled': return 'danger';
+            case 'in_progress': return 'primary';
+            default: return 'default';
+        }
+    };
+
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
+    if (loading) {
+        return (
+            <div className="min-h-screen bg-background-light flex flex-col font-body">
+                <Navbar />
+                <div className="flex-1 flex justify-center items-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cta"></div>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background-light flex flex-col font-body">
             <Navbar />
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">Doctor Dashboard</h1>
-                    <button
+            <div className="max-w-7xl mx-auto px-4 py-8 w-full flex-1">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-heading font-bold text-text-primary">Doctor Dashboard</h1>
+                        <p className="text-text-secondary mt-1">Manage your appointments and patient interactions.</p>
+                    </div>
+                    <Button
                         onClick={() => navigate('/doctor/availability')}
-                        className="px-6 py-3 bg-white border border-gray-200 text-gray-700 rounded-lg hover:bg-gray-50 transition shadow-sm font-medium"
+                        variant="secondary"
+                        className="whitespace-nowrap shadow-sm"
                     >
                         Manage Availability
-                    </button>
+                    </Button>
                 </div>
 
-                {loading ? (
-                    <p className="text-center text-gray-500">Loading schedule...</p>
-                ) : appointments.length === 0 ? (
-                    <div className="text-center py-12 bg-white rounded-lg shadow">
-                        <p className="text-gray-500">No appointments scheduled.</p>
+                {appointments.length === 0 ? (
+                    <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200 shadow-sm">
+                        <div className="text-6xl mb-4">📅</div>
+                        <h3 className="text-xl font-bold text-text-primary">No appointments scheduled</h3>
+                        <p className="text-text-secondary mt-2">Your upcoming appointments will appear here.</p>
                     </div>
                 ) : (
                     <div className="grid gap-6">
                         {appointments.map((apt) => (
-                            <div key={apt._id} className="bg-white p-6 rounded-lg shadow-md flex flex-col md:flex-row justify-between items-center">
-                                <div className="mb-4 md:mb-0">
-                                    <h3 className="text-xl font-bold text-gray-800">Patient: {apt.patient.name}</h3>
-                                    <div className="mt-2 text-sm text-gray-500">
-                                        <p>📅 {new Date(apt.date).toLocaleDateString()}</p>
-                                        <p>⏰ {apt.startTime} - {apt.endTime}</p>
-                                        <p className={`font-bold mt-1 ${apt.status === 'COMPLETED' ? 'text-green-600' :
-                                            apt.status === 'CANCELLED' ? 'text-red-600' :
-                                                apt.status === 'IN_PROGRESS' ? 'text-blue-600' :
-                                                    'text-yellow-600'
-                                            }`}>
-                                            Status: {apt.status.replace('_', ' ')}
-                                        </p>
+                            <Card key={apt._id} className="hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden">
+                                <div className="p-6">
+                                    <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
+                                        <div className="flex items-start md:items-center gap-4">
+                                            <div className="w-14 h-14 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-xl shadow-inner">
+                                                {apt.patient.name.charAt(0)}
+                                            </div>
+                                            <div>
+                                                <h3 className="text-lg font-heading font-bold text-text-primary">Patient: {apt.patient.name}</h3>
+                                                <div className="flex flex-wrap gap-3 mt-1 text-sm text-text-secondary">
+                                                    <span className="flex items-center">
+                                                        <span className="mr-1">📅</span> {formatDate(apt.date)}
+                                                    </span>
+                                                    <span className="flex items-center">
+                                                        <span className="mr-1">⏰</span> {apt.startTime} - {apt.endTime}
+                                                    </span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <Badge variant={getStatusVariant(apt.status)} className="capitalize px-3 py-1">
+                                            {apt.status.replace('_', ' ').toLowerCase()}
+                                        </Badge>
+                                    </div>
+
+                                    <div className="grid grid-cols-2 md:flex md:flex-wrap gap-3 pt-4 border-t border-gray-50">
+                                        <Button
+                                            onClick={() => handleJoinVideo(apt._id)}
+                                            disabled={apt.status === 'CANCELLED' || apt.status === 'COMPLETED'}
+                                            className="w-full md:w-auto text-sm"
+                                        >
+                                            Start Call
+                                        </Button>
+                                        <Button
+                                            variant="secondary"
+                                            onClick={() => handleOpenChat(apt._id)}
+                                            disabled={apt.status === 'CANCELLED'}
+                                            className="w-full md:w-auto text-sm"
+                                        >
+                                            Chat
+                                        </Button>
+                                        <Button
+                                            variant="outline"
+                                            onClick={() => navigate(`/doctor/appointments/${apt._id}/prescribe`)}
+                                            disabled={apt.status === 'CANCELLED'}
+                                            className="w-full md:w-auto text-sm"
+                                        >
+                                            Prescribe
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => navigate(`/doctor/appointments/${apt._id}/prescription`)}
+                                            className="w-full md:w-auto text-sm"
+                                        >
+                                            View Rx
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => navigate(`/doctor/patient/${apt.patient._id}/reports`)}
+                                            className="w-full md:w-auto text-sm text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+                                        >
+                                            Lab Reports
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => navigate(`/doctor/patient/${apt.patient._id}/vitals`)}
+                                            className="w-full md:w-auto text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
+                                        >
+                                            Vitals
+                                        </Button>
                                     </div>
                                 </div>
-                                <div className="flex flex-col space-y-2 md:flex-row md:space-y-0 md:space-x-3">
-                                    <button
-                                        onClick={() => handleJoinVideo(apt._id)}
-                                        disabled={apt.status === 'CANCELLED' || apt.status === 'COMPLETED'}
-                                        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed"
-                                    >
-                                        Start Consultation
-                                    </button>
-                                    <button
-                                        onClick={() => handleOpenChat(apt._id)}
-                                        disabled={apt.status === 'CANCELLED'}
-                                        className="px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-50 disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed"
-                                    >
-                                        Open Chat
-                                    </button>
-                                    <button
-                                        onClick={() => navigate(`/doctor/appointments/${apt._id}/prescribe`)}
-                                        disabled={apt.status === 'CANCELLED'}
-                                        className="px-4 py-2 border border-green-600 text-green-600 rounded hover:bg-green-50 disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed"
-                                    >
-                                        Prescribe
-                                    </button>
-                                    <button
-                                        onClick={() => navigate(`/doctor/appointments/${apt._id}/prescription`)}
-                                        className="px-4 py-2 border border-gray-300 text-gray-700 rounded hover:bg-gray-100"
-                                    >
-                                        View Prescription
-                                    </button>
-                                    <button
-                                        onClick={() => navigate(`/doctor/patient/${apt.patient._id}/reports`)}
-                                        className="px-4 py-2 border border-purple-300 text-purple-700 rounded hover:bg-purple-50"
-                                    >
-                                        Lab Reports
-                                    </button>
-                                    <button
-                                        onClick={() => navigate(`/doctor/patient/${apt.patient._id}/vitals`)}
-                                        className="px-4 py-2 border border-red-300 text-red-700 rounded hover:bg-red-50"
-                                    >
-                                        View Vitals
-                                    </button>
-                                </div>
-                            </div>
+                            </Card>
                         ))}
                     </div>
                 )}

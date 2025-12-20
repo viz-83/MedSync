@@ -2,6 +2,9 @@ import React, { useState, useEffect } from 'react';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
 import { useParams, useNavigate } from 'react-router-dom';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import { FaArrowLeft, FaFileAlt, FaExternalLinkAlt, FaDownload } from 'react-icons/fa';
 
 const ViewReportsDoctor = () => {
     const { id: patientId } = useParams();
@@ -31,58 +34,81 @@ const ViewReportsDoctor = () => {
         fetchReports();
     }, [patientId]);
 
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background-light flex flex-col font-body">
             <Navbar />
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="mb-6 px-4 py-2 bg-gray-200 rounded text-gray-700 hover:bg-gray-300"
-                >
-                    &larr; Back
-                </button>
-
-                <div className="bg-white rounded-lg shadow overflow-hidden">
-                    <div className="px-6 py-4 border-b bg-blue-50">
-                        <h2 className="text-xl font-bold text-gray-800">Patient Lab Reports</h2>
+            <div className="flex-1 max-w-4xl mx-auto w-full p-4 md:p-8">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-heading font-bold text-text-primary">Patient Lab Reports</h1>
+                        <p className="text-text-secondary mt-1">View uploaded medical documents and test results.</p>
                     </div>
+                    <Button
+                        variant="ghost"
+                        onClick={() => navigate(-1)}
+                        className="hover:bg-transparent hover:text-cta pl-0 md:pl-4"
+                    >
+                        <FaArrowLeft className="mr-2" /> Back
+                    </Button>
+                </div>
 
-                    {loading ? (
-                        <div className="p-8 text-center text-gray-500">Loading reports...</div>
-                    ) : error ? (
-                        <div className="p-8 text-center text-red-500">{error}</div>
-                    ) : reports.length === 0 ? (
-                        <div className="p-8 text-center text-gray-500">No reports found for this patient.</div>
-                    ) : (
-                        <ul className="divide-y divide-gray-200">
-                            {reports.map((report) => (
-                                <li key={report._id} className="p-6 flex justify-between items-center hover:bg-gray-50 transition">
-                                    <div className="flex items-center">
-                                        <div className="p-3 bg-blue-100 rounded-full mr-4 text-blue-600">
-                                            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
+                {loading ? (
+                    <div className="flex justify-center items-center py-12">
+                        <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-cta"></div>
+                    </div>
+                ) : error ? (
+                    <div className="bg-secondary/30 text-primary p-4 rounded-xl border border-secondary text-center">
+                        {error}
+                    </div>
+                ) : reports.length === 0 ? (
+                    <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-secondary">
+                        <div className="text-5xl mb-4 text-secondary">📂</div>
+                        <h3 className="text-xl font-bold text-text-primary">No reports found</h3>
+                        <p className="text-text-secondary mt-2">This patient has not uploaded any lab reports yet.</p>
+                    </div>
+                ) : (
+                    <div className="grid gap-4">
+                        {reports.map((report) => (
+                            <Card key={report._id} className="hover:shadow-md transition-shadow border-gray-100">
+                                <div className="p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                    <div className="flex items-start gap-4">
+                                        <div className="p-3 bg-secondary/20 rounded-xl text-cta">
+                                            <FaFileAlt size={24} />
                                         </div>
                                         <div>
-                                            <p className="font-semibold text-gray-900">{report.fileName}</p>
-                                            <p className="text-sm text-gray-500">
-                                                Uploaded: {new Date(report.uploadedAt).toLocaleDateString()}
+                                            <p className="font-bold text-text-primary text-lg">{report.fileName}</p>
+                                            <p className="text-sm text-text-secondary">
+                                                Uploaded on {formatDate(report.uploadedAt)}
                                             </p>
                                         </div>
                                     </div>
-                                    <a
-                                        href={`http://localhost:5000/api/v1/reports/download/${report._id}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="px-4 py-2 bg-white border border-blue-600 text-blue-600 rounded hover:bg-blue-50 shadow-sm font-medium"
-                                    >
-                                        View Report
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
-                </div>
+
+                                    <div className="flex gap-2 w-full sm:w-auto">
+                                        <a
+                                            href={`http://localhost:5000/api/v1/reports/download/${report._id}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="flex-1 sm:flex-none"
+                                        >
+                                            <Button variant="secondary" className="w-full sm:w-auto text-sm">
+                                                <FaExternalLinkAlt className="mr-2" /> View
+                                            </Button>
+                                        </a>
+                                        {/* Optional Download Button if needed differently */}
+                                    </div>
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

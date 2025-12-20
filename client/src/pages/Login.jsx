@@ -1,19 +1,31 @@
 import React, { useState } from 'react';
 import axios from '../utils/axiosInstance';
 import { useNavigate, Link } from 'react-router-dom';
+import Card from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
 
 const Login = () => {
     const [formData, setFormData] = useState({ email: '', password: '' });
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError(''); // Clear error on typing
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
+        setError('');
+
         try {
             const res = await axios.post('http://localhost:5000/api/auth/login', formData, { withCredentials: true });
             localStorage.setItem('token', res.data.token);
             localStorage.setItem('user', JSON.stringify(res.data.user));
+
             if (res.data.user.role === 'doctor') {
                 if (res.data.isDoctorProfileComplete) {
                     navigate('/doctor/dashboard');
@@ -21,22 +33,63 @@ const Login = () => {
                     navigate('/doctor/onboarding');
                 }
             } else {
-                navigate('/dashboard');
+                navigate('/');
             }
         } catch (error) {
-            alert(error.response?.data?.message || 'Login failed');
+            setError(error.response?.data?.message || 'Login failed. Please try again.');
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-96">
-                <h2 className="text-2xl font-bold mb-6 text-center">Login</h2>
-                <input type="email" name="email" placeholder="Email" onChange={handleChange} className="w-full p-2 mb-4 border rounded" required />
-                <input type="password" name="password" placeholder="Password" onChange={handleChange} className="w-full p-2 mb-4 border rounded" required />
-                <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Login</button>
-                <p className="mt-4 text-center text-sm">Don't have an account? <Link to="/signup" className="text-blue-600">Signup</Link></p>
-            </form>
+        <div className="min-h-screen flex items-center justify-center bg-background-light px-4">
+            <Card className="w-full max-w-md p-8 md:p-10 shadow-xl border-t-4 border-cta">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">Welcome Back</h1>
+                    <p className="text-text-secondary">Sign in to access your healthcare portal</p>
+                </div>
+
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <Input
+                        label="Email Address"
+                        type="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        onChange={handleChange}
+                        required
+                    />
+                    <Input
+                        label="Password"
+                        type="password"
+                        name="password"
+                        placeholder="••••••••"
+                        onChange={handleChange}
+                        required
+                    />
+
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        size="md"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Signing in...' : 'Sign In'}
+                    </Button>
+                </form>
+
+                <div className="mt-8 text-center text-sm text-text-secondary">
+                    Don't have an account?{' '}
+                    <Link to="/signup" className="text-cta font-semibold hover:text-cta-hover">
+                        Create Account
+                    </Link>
+                </div>
+            </Card>
         </div>
     );
 };

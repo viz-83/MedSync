@@ -1,11 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import { FaPrescriptionBottleAlt, FaUserMd, FaCalendarAlt, FaFilePdf, FaArrowLeft, FaEye } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 
 const MyPrescriptions = () => {
     const [prescriptions, setPrescriptions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const navigate = useNavigate();
 
     useEffect(() => {
         const fetchPrescriptions = async () => {
@@ -30,64 +36,98 @@ const MyPrescriptions = () => {
         fetchPrescriptions();
     }, []);
 
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
+
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background-light flex flex-col font-body">
             <Navbar />
-            <div className="max-w-7xl mx-auto px-4 py-8">
-                <h1 className="text-3xl font-bold text-gray-800 mb-8">My Prescriptions</h1>
+            <div className="flex-1 max-w-7xl mx-auto w-full p-4 md:p-8">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-heading font-bold text-text-primary">My Prescriptions</h1>
+                        <p className="text-text-secondary mt-1">View and download your medical prescriptions.</p>
+                    </div>
+                    <Button
+                        variant="ghost"
+                        onClick={() => navigate('/')}
+                        className="hover:bg-transparent hover:text-cta pl-0 md:pl-4"
+                    >
+                        <FaArrowLeft className="mr-2" /> Back to Dashboard
+                    </Button>
+                </div>
 
                 {loading ? (
-                    <p className="text-gray-500">Loading...</p>
+                    <div className="flex justify-center items-center py-20">
+                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cta"></div>
+                    </div>
                 ) : error ? (
-                    <p className="text-red-500">{error}</p>
+                    <div className="bg-red-50 text-red-700 p-4 rounded-xl border border-red-200 text-center shadow-sm">
+                        {error}
+                    </div>
                 ) : prescriptions.length === 0 ? (
-                    <div className="bg-white p-8 rounded-lg shadow text-center text-gray-500">
-                        You have no prescriptions yet.
+                    <div className="bg-white rounded-3xl p-12 text-center border border-dashed border-gray-200">
+                        <div className="text-5xl mb-4 text-gray-300">💊</div>
+                        <h3 className="text-xl font-bold text-text-primary">No prescriptions found</h3>
+                        <p className="text-text-secondary mt-2">You haven't received any prescriptions yet.</p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-lg shadow overflow-hidden">
-                        <table className="min-w-full divide-y divide-gray-200">
-                            <thead className="bg-gray-50">
-                                <tr>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Doctor</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Diagnosis</th>
-                                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Action</th>
-                                </tr>
-                            </thead>
-                            <tbody className="bg-white divide-y divide-gray-200">
-                                {prescriptions.map((script) => (
-                                    <tr key={script._id}>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            {new Date(script.createdAt).toLocaleDateString()}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                                            Dr. {script.doctor?.name || 'Unknown'}
-                                        </td>
-                                        <td className="px-6 py-4 text-sm text-gray-900">
-                                            {script.diagnosis}
-                                        </td>
-                                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                            {script.pdfUrl ? (
-                                                <a
-                                                    href={`http://localhost:5000${script.pdfUrl}`}
-                                                    target="_blank"
-                                                    rel="noopener noreferrer"
-                                                    className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md shadow-sm text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                                                >
-                                                    <svg className="mr-2 -ml-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                                    </svg>
-                                                    View / Download PDF
-                                                </a>
-                                            ) : (
-                                                <span className="text-gray-400">Processing...</span>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))}
-                            </tbody>
-                        </table>
+                    <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+                        {prescriptions.map((script) => (
+                            <Card key={script._id} className="hover:shadow-lg transition-all duration-300 border border-gray-100 flex flex-col h-full">
+                                <div className="p-6 flex-1">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div className="p-3 bg-blue-50 rounded-xl text-cta">
+                                            <FaPrescriptionBottleAlt size={24} />
+                                        </div>
+                                        <Badge variant="success" className="text-xs">Issued</Badge>
+                                    </div>
+
+                                    <div className="mb-4">
+                                        <h3 className="font-heading font-bold text-xl text-text-primary mb-1">
+                                            {script.diagnosis || 'General Consultation'}
+                                        </h3>
+                                        <p className="text-sm text-text-secondary flex items-center gap-2">
+                                            <FaCalendarAlt size={12} /> {formatDate(script.createdAt)}
+                                        </p>
+                                    </div>
+
+                                    <div className="flex items-center gap-3 mb-6 p-3 bg-gray-50 rounded-lg">
+                                        <div className="w-10 h-10 rounded-full bg-white flex items-center justify-center text-gray-400 shadow-sm border border-gray-100">
+                                            <FaUserMd />
+                                        </div>
+                                        <div>
+                                            <p className="text-xs font-bold text-text-secondary uppercase">Prescribed By</p>
+                                            <p className="text-sm font-bold text-text-primary">Dr. {script.doctor?.name || 'Unknown'}</p>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-4 bg-gray-50 border-t border-gray-100">
+                                    {script.pdfUrl ? (
+                                        <a
+                                            href={`http://localhost:5000${script.pdfUrl}`}
+                                            target="_blank"
+                                            rel="noopener noreferrer"
+                                            className="w-full"
+                                        >
+                                            <Button className="w-full justify-center shadow-md shadow-cta/10">
+                                                <FaFilePdf className="mr-2" /> View PDF
+                                            </Button>
+                                        </a>
+                                    ) : (
+                                        <Button disabled className="w-full justify-center opacity-50 cursor-not-allowed">
+                                            Processing PDF...
+                                        </Button>
+                                    )}
+                                </div>
+                            </Card>
+                        ))}
                     </div>
                 )}
             </div>

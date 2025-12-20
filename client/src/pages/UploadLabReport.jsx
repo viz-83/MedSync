@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import { FaArrowLeft, FaCloudUploadAlt, FaFileAlt, FaTrash, FaCheckCircle, FaExternalLinkAlt } from 'react-icons/fa';
 
 const UploadLabReport = () => {
     const navigate = useNavigate();
@@ -58,10 +62,10 @@ const UploadLabReport = () => {
             });
 
             if (data.status === 'success') {
-                alert('Report uploaded successfully!');
                 setFile(null);
                 // Reset file input if valid
-                document.getElementById('fileInput').value = '';
+                const fileInput = document.getElementById('fileInput');
+                if (fileInput) fileInput.value = '';
                 fetchReports(); // Refresh list
             }
         } catch (err) {
@@ -73,77 +77,113 @@ const UploadLabReport = () => {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background-light flex flex-col font-body">
             <Navbar />
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                <div className="flex justify-between items-center mb-6">
-                    <h1 className="text-2xl font-bold text-gray-800">My Lab Reports</h1>
-                    <button onClick={() => navigate('/dashboard')} className="text-blue-600 hover:text-blue-800">
-                        &larr; Back to Dashboard
-                    </button>
-                </div>
-
-                {/* Upload Section */}
-                <div className="bg-white p-6 rounded-lg shadow mb-8">
-                    <h2 className="text-lg font-semibold mb-4">Upload New Report</h2>
-                    {error && <p className="text-red-500 mb-4">{error}</p>}
-                    <form onSubmit={handleUpload} className="flex gap-4 items-end">
-                        <div className="flex-1">
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Select File (PDF, Image)</label>
-                            <input
-                                id="fileInput"
-                                type="file"
-                                onChange={handleFileChange}
-                                accept=".pdf,.png,.jpg,.jpeg"
-                                className="block w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
-                            />
-                        </div>
-                        <button
-                            type="submit"
-                            disabled={uploading}
-                            className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 disabled:bg-blue-300"
-                        >
-                            {uploading ? 'Uploading...' : 'Upload'}
-                        </button>
-                    </form>
-                </div>
-
-                {/* List Section */}
-                <div className="bg-white rounded-lg shadow overflow-hidden">
-                    <div className="px-6 py-4 border-b">
-                        <h2 className="text-lg font-semibold text-gray-800">Uploaded Reports</h2>
+            <div className="flex-1 max-w-4xl mx-auto w-full p-4 md:p-8">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-heading font-bold text-text-primary">My Lab Reports</h1>
+                        <p className="text-text-secondary mt-1">Store and access your medical documents securely.</p>
                     </div>
-                    {loading ? (
-                        <p className="p-6 text-gray-500">Loading...</p>
-                    ) : reports.length === 0 ? (
-                        <p className="p-6 text-gray-500 text-center">No reports uploaded yet.</p>
-                    ) : (
-                        <ul className="divide-y divide-gray-200">
-                            {reports.map((report) => (
-                                <li key={report._id} className="p-6 flex justify-between items-center hover:bg-gray-50">
-                                    <div className="flex items-center">
-                                        <div className="mr-4">
-                                            <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                                            </svg>
+                    <Button
+                        variant="ghost"
+                        onClick={() => navigate('/')}
+                        className="hover:bg-transparent hover:text-cta pl-0 md:pl-4"
+                    >
+                        <FaArrowLeft className="mr-2" /> Back to Dashboard
+                    </Button>
+                </div>
+
+                <div className="flex flex-col gap-8">
+                    {/* Upload Section */}
+                    <Card className="p-8 border-dashed border-2 border-cta/30 bg-secondary/10">
+                        <div className="flex items-center gap-3 mb-6">
+                            <div className="p-2 bg-secondary rounded-lg text-cta">
+                                <FaCloudUploadAlt size={24} />
+                            </div>
+                            <h2 className="text-xl font-heading font-bold text-text-primary">Upload New Report</h2>
+                        </div>
+
+                        {error && (
+                            <div className="mb-4 text-red-600 bg-red-50 p-3 rounded-lg border border-red-200 text-sm">
+                                {error}
+                            </div>
+                        )}
+
+                        <form onSubmit={handleUpload} className="flex flex-col md:flex-row gap-4 items-end">
+                            <div className="flex-1 w-full">
+                                <label className="block text-sm font-medium text-text-secondary mb-2">Select File (PDF, Image)</label>
+                                <input
+                                    id="fileInput"
+                                    type="file"
+                                    onChange={handleFileChange}
+                                    accept=".pdf,.png,.jpg,.jpeg"
+                                    className="block w-full text-sm text-text-secondary
+                                    file:mr-4 file:py-2.5 file:px-4
+                                    file:rounded-full file:border-0
+                                    file:text-sm file:font-semibold
+                                    file:bg-cta file:text-white
+                                    hover:file:bg-cta-dark
+                                    cursor-pointer bg-white border border-gray-200 rounded-lg"
+                                />
+                            </div>
+                            <Button
+                                type="submit"
+                                disabled={uploading}
+                                className="w-full md:w-auto shadow-md"
+                            >
+                                {uploading ? 'Uploading...' : 'Upload Report'}
+                            </Button>
+                        </form>
+                    </Card>
+
+                    {/* List Section */}
+                    <div>
+                        <h2 className="text-xl font-heading font-bold text-text-primary mb-4 flex items-center gap-2">
+                            <FaFileAlt className="text-text-secondary" /> Uploaded Reports
+                        </h2>
+
+                        {loading ? (
+                            <div className="flex justify-center py-10">
+                                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cta"></div>
+                            </div>
+                        ) : reports.length === 0 ? (
+                            <Card className="p-12 text-center bg-gray-50 border-gray-100 shadow-none">
+                                <p className="text-text-secondary">No reports uploaded yet.</p>
+                            </Card>
+                        ) : (
+                            <div className="grid gap-4">
+                                {reports.map((report) => (
+                                    <Card key={report._id} className="hover:shadow-md transition-all border-gray-100">
+                                        <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                                            <div className="flex items-center gap-4">
+                                                <div className="p-3 bg-secondary/20 rounded-xl text-text-secondary">
+                                                    <FaFileAlt size={20} />
+                                                </div>
+                                                <div>
+                                                    <p className="font-bold text-text-primary">{report.fileName}</p>
+                                                    <p className="text-xs text-text-secondary">
+                                                        Uploaded on {new Date(report.uploadedAt).toLocaleDateString()}
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2">
+                                                <a
+                                                    href={`http://localhost:5000/api/v1/reports/download/${report._id}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                >
+                                                    <Button variant="outline" size="sm">
+                                                        <FaExternalLinkAlt className="mr-2" /> View
+                                                    </Button>
+                                                </a>
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-medium text-gray-900">{report.fileName}</p>
-                                            <p className="text-sm text-gray-500">Uploaded on {new Date(report.uploadedAt).toLocaleDateString()}</p>
-                                        </div>
-                                    </div>
-                                    <a
-                                        href={`http://localhost:5000/api/v1/reports/download/${report._id}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="text-blue-600 hover:text-blue-800 font-medium text-sm"
-                                    >
-                                        View / Download
-                                    </a>
-                                </li>
-                            ))}
-                        </ul>
-                    )}
+                                    </Card>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

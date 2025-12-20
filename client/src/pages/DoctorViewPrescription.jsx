@@ -2,6 +2,10 @@ import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
+import { FaArrowLeft, FaFilePdf, FaUserMd, FaUser, FaCalendarAlt, FaPills, FaFlask, FaNotesMedical, FaCheckCircle } from 'react-icons/fa';
 
 const DoctorViewPrescription = () => {
     const { id: appointmentId } = useParams();
@@ -38,109 +42,164 @@ const DoctorViewPrescription = () => {
         fetchPrescription();
     }, [appointmentId]);
 
-    return (
-        <div className="min-h-screen bg-gray-50">
-            <Navbar />
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                <button
-                    onClick={() => navigate('/doctor/dashboard')}
-                    className="mb-6 px-4 py-2 text-gray-600 bg-gray-200 rounded hover:bg-gray-300"
-                >
-                    &larr; Back to Dashboard
-                </button>
+    const formatDate = (dateString) => {
+        return new Date(dateString).toLocaleDateString('en-US', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+        });
+    };
 
-                <div className="bg-white rounded-lg shadow-lg p-8">
+    return (
+        <div className="min-h-screen bg-background-light flex flex-col font-body">
+            <Navbar />
+            <div className="flex-1 max-w-4xl mx-auto w-full p-4 md:p-8">
+                <Button
+                    variant="ghost"
+                    onClick={() => navigate('/doctor/dashboard')}
+                    className="mb-6 pl-0 hover:bg-transparent hover:text-cta"
+                >
+                    <FaArrowLeft className="mr-2" /> Back to Dashboard
+                </Button>
+
+                <div className="flex flex-col gap-6">
                     {loading ? (
-                        <p className="text-gray-500">Loading prescription...</p>
+                        <Card className="p-12 flex justify-center items-center">
+                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-cta"></div>
+                        </Card>
                     ) : error ? (
-                        <div className="text-center py-8">
-                            <p className="text-red-500 text-lg mb-4">{error}</p>
+                        <Card className="p-8 text-center border-red-100 bg-red-50">
+                            <p className="text-red-500 text-lg mb-4 font-bold">{error}</p>
                             {error.includes('No prescription found') && (
-                                <button
+                                <Button
                                     onClick={() => navigate(`/doctor/appointments/${appointmentId}/prescribe`)}
-                                    className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
+                                    size="lg"
                                 >
                                     Create Prescription
-                                </button>
+                                </Button>
                             )}
-                        </div>
+                        </Card>
                     ) : prescription ? (
-                        <>
-                            <div className="border-b pb-6 mb-6">
-                                <h1 className="text-3xl font-bold text-gray-800">Prescription Details</h1>
-                                <p className="text-gray-500 mt-1">Date: {new Date(prescription.createdAt).toLocaleDateString()}</p>
+                        <Card className="overflow-hidden shadow-xl border-t-8 border-cta">
+                            {/* Header */}
+                            <div className="p-8 border-b border-gray-100 bg-gray-50/30">
+                                <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                    <div>
+                                        <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">Prescription</h1>
+                                        <div className="flex items-center text-text-secondary text-sm">
+                                            <FaCalendarAlt className="mr-2" />
+                                            <span>Issued on {formatDate(prescription.createdAt)}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-2">
+                                        <Badge variant="success" className="px-3 py-1 flex items-center gap-2">
+                                            <FaCheckCircle /> Verified
+                                        </Badge>
+                                    </div>
+                                </div>
                             </div>
 
-                            <div className="space-y-8">
-                                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                                    <div className="bg-blue-50 p-4 rounded-lg">
-                                        <h3 className="text-sm font-semibold text-blue-800 uppercase tracking-wide mb-2">Patient Details</h3>
-                                        <p className="text-lg font-medium text-gray-900">{prescription.patient?.name}</p>
-                                        <p className="text-gray-600">{prescription.patient?.email}</p>
+                            {/* Patient & Doctor Info */}
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 p-8 border-b border-gray-100">
+                                <div className="flex items-start gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl">
+                                        <FaUser />
                                     </div>
-                                    <div className="bg-green-50 p-4 rounded-lg">
-                                        <h3 className="text-sm font-semibold text-green-800 uppercase tracking-wide mb-2">Doctor Details</h3>
-                                        <p className="text-lg font-medium text-gray-900">Dr. {prescription.doctor?.name}</p>
+                                    <div>
+                                        <p className="text-sm font-bold text-text-secondary uppercase tracking-wider">Patient</p>
+                                        <p className="text-lg font-bold text-text-primary">{prescription.patient?.name || 'Unknown'}</p>
+                                        <p className="text-text-secondary text-sm">{prescription.patient?.email}</p>
+                                    </div>
+                                </div>
+                                <div className="flex items-start gap-4">
+                                    <div className="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xl">
+                                        <FaUserMd />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-text-secondary uppercase tracking-wider">Doctor</p>
+                                        <p className="text-lg font-bold text-text-primary">Dr. {prescription.doctor?.name || 'Unknown'}</p>
+                                        <p className="text-text-secondary text-sm">General Practitioner</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Clinical Details */}
+                            <div className="p-8 space-y-8">
+                                {/* Diagnosis */}
+                                <div>
+                                    <h3 className="text-lg font-heading font-bold text-text-primary mb-3 flex items-center gap-2">
+                                        <FaNotesMedical className="text-cta" /> Diagnosis
+                                    </h3>
+                                    <div className="bg-gray-50 p-4 rounded-xl border border-gray-100 text-text-primary">
+                                        {prescription.diagnosis || 'No diagnosis recorded.'}
                                     </div>
                                 </div>
 
+                                {/* Medicines */}
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Diagnosis</h3>
-                                    <div className="bg-gray-50 p-4 rounded border border-gray-200">
-                                        <p className="text-gray-800 whitespace-pre-line">{prescription.diagnosis || 'No diagnosis recorded.'}</p>
-                                    </div>
-                                </div>
-
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Medicines</h3>
+                                    <h3 className="text-lg font-heading font-bold text-text-primary mb-3 flex items-center gap-2">
+                                        <FaPills className="text-cta" /> Medications
+                                    </h3>
                                     {prescription.medicines && prescription.medicines.length > 0 ? (
-                                        <div className="overflow-hidden border border-gray-200 rounded-lg">
-                                            <table className="min-w-full divide-y divide-gray-200">
-                                                <thead className="bg-gray-50">
-                                                    <tr>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Medicine</th>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Dosage</th>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Freq</th>
-                                                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Duration</th>
-                                                    </tr>
-                                                </thead>
-                                                <tbody className="bg-white divide-y divide-gray-200">
-                                                    {prescription.medicines.map((med, idx) => (
-                                                        <tr key={idx}>
-                                                            <td className="px-6 py-4 text-sm font-medium text-gray-900">{med.name}</td>
-                                                            <td className="px-6 py-4 text-sm text-gray-500">{med.dosage}</td>
-                                                            <td className="px-6 py-4 text-sm text-gray-500">{med.frequency}</td>
-                                                            <td className="px-6 py-4 text-sm text-gray-500">{med.duration}</td>
-                                                        </tr>
-                                                    ))}
-                                                </tbody>
-                                            </table>
+                                        <div className="grid gap-3">
+                                            {prescription.medicines.map((med, idx) => (
+                                                <div key={idx} className="flex flex-col sm:flex-row sm:items-center justify-between p-4 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                                                    <div>
+                                                        <p className="font-bold text-text-primary text-lg">{med.name}</p>
+                                                        <p className="text-text-secondary text-sm flex flex-wrap gap-2 mt-1">
+                                                            <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">Dosage: {med.dosage}</span>
+                                                            <span className="bg-gray-100 px-2 py-0.5 rounded text-xs">Freq: {med.frequency}</span>
+                                                        </p>
+                                                    </div>
+                                                    <div className="mt-2 sm:mt-0 text-right">
+                                                        <span className="text-sm font-bold text-cta bg-blue-50 px-3 py-1 rounded-full">
+                                                            {med.duration}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     ) : (
-                                        <p className="text-gray-500 italic">No medicines prescribed.</p>
+                                        <p className="text-text-muted italic">No medicines prescribed.</p>
                                     )}
                                 </div>
 
+                                {/* Tests */}
                                 {prescription.tests && prescription.tests.length > 0 && (
                                     <div>
-                                        <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Recommended Tests</h3>
-                                        <ul className="list-disc list-inside bg-gray-50 p-4 rounded border border-gray-200 text-gray-700">
+                                        <h3 className="text-lg font-heading font-bold text-text-primary mb-3 flex items-center gap-2">
+                                            <FaFlask className="text-cta" /> Recommended Tests
+                                        </h3>
+                                        <div className="flex flex-wrap gap-2">
                                             {prescription.tests.map((test, idx) => (
-                                                <li key={idx} className="mb-1">{test}</li>
+                                                <Badge key={idx} variant="warning" className="px-3 py-1 text-sm">
+                                                    {test}
+                                                </Badge>
                                             ))}
-                                        </ul>
+                                        </div>
                                     </div>
                                 )}
 
-                                <div>
-                                    <h3 className="text-xl font-bold text-gray-800 border-b pb-2 mb-4">Advice</h3>
-                                    <div className="bg-yellow-50 p-4 rounded border border-yellow-200">
-                                        <p className="text-gray-800 whitespace-pre-line">{prescription.advice || 'No advice recorded.'}</p>
+                                {/* Advice */}
+                                {prescription.advice && (
+                                    <div className="bg-yellow-50 border border-yellow-100 rounded-xl p-5">
+                                        <h3 className="text-lg font-heading font-bold text-yellow-800 mb-2">Additional Advice</h3>
+                                        <p className="text-yellow-900 leading-relaxed">
+                                            {prescription.advice}
+                                        </p>
                                     </div>
-                                </div>
+                                )}
                             </div>
 
-                        </>
+                            {/* Actions */}
+                            <div className="p-8 bg-gray-50 border-t border-gray-100 flex justify-end gap-3">
+                                <Button variant="outline" onClick={() => window.print()}>
+                                    Print Prescription
+                                </Button>
+                                {/* Assuming we might have a PDF download later */}
+                                {/* <Button>Download PDF</Button> */}
+                            </div>
+                        </Card>
                     ) : null}
                 </div>
             </div>

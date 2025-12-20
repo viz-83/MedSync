@@ -84,8 +84,7 @@ const CustomCallControls = ({ onLeave }) => {
             {/* Microphone */}
             <button
                 onClick={() => microphone.toggle()}
-                className={`p-4 rounded-full transition-all duration-200 shadow-lg ${isMicMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
-                    }`}
+                className={`p-4 rounded-full transition-all duration-200 shadow-lg ${isMicMuted ? 'bg-accent hover:bg-gray-600' : 'bg-primary hover:bg-green-700'}`}
                 title={isMicMuted ? "Unmute" : "Mute"}
             >
                 {isMicMuted ? (
@@ -102,8 +101,7 @@ const CustomCallControls = ({ onLeave }) => {
             {/* Camera */}
             <button
                 onClick={() => camera.toggle()}
-                className={`p-4 rounded-full transition-all duration-200 shadow-lg ${isCamMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
-                    }`}
+                className={`p-4 rounded-full transition-all duration-200 shadow-lg ${isCamMuted ? 'bg-accent hover:bg-gray-600' : 'bg-primary hover:bg-green-700'}`}
                 title={isCamMuted ? "Turn Video On" : "Turn Video Off"}
             >
                 {isCamMuted ? (
@@ -121,8 +119,7 @@ const CustomCallControls = ({ onLeave }) => {
             {/* Screen Share */}
             <button
                 onClick={() => screenShare.toggle()}
-                className={`p-4 rounded-full transition-all duration-200 shadow-lg ${!isScreenShareOff ? 'bg-green-500 hover:bg-green-600' : 'bg-gray-700 hover:bg-gray-600'
-                    }`}
+                className={`p-4 rounded-full transition-all duration-200 shadow-lg ${!isScreenShareOff ? 'bg-cta hover:bg-teal-700' : 'bg-accent/50 hover:bg-gray-600'}`}
                 title="Share Screen"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="w-6 h-6">
@@ -167,8 +164,7 @@ const CustomCallControls = ({ onLeave }) => {
                 {/* Main Reaction Toggle Button */}
                 <button
                     onClick={() => setShowReactions(!showReactions)}
-                    className={`p-4 rounded-full transition-all duration-200 shadow-lg ${showReactions ? 'bg-blue-600 hover:bg-blue-700' : 'bg-gray-700 hover:bg-gray-600'
-                        }`}
+                    className={`p-4 rounded-full transition-all duration-200 shadow-lg ${showReactions ? 'bg-cta hover:bg-teal-700' : 'bg-accent/50 hover:bg-gray-600'}`}
                     title="Reactions"
                 >
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="white" className="w-6 h-6">
@@ -228,7 +224,7 @@ const VideoCallPage = () => {
                 } catch (error) {
                     console.error('Error fetching token:', error);
                     alert('Failed to join call. Please try again.');
-                    navigate('/dashboard');
+                    navigate('/');
                     return;
                 }
             }
@@ -284,7 +280,7 @@ const VideoCallPage = () => {
                     return; // Exit, logic below waits for permission fix
                 }
                 alert(`Failed to join call: ${errorMessage}`);
-                navigate('/dashboard');
+                navigate('/');
                 return;
             }
 
@@ -374,8 +370,8 @@ const VideoCallPage = () => {
             }
         }
         // Force fully reload/navigate to ensure browser releases hardware
-        // navigate('/dashboard'); 
-        window.location.href = '/dashboard';
+        // navigate('/'); 
+        window.location.href = '/';
     };
 
     if (permissionDenied) {
@@ -391,7 +387,7 @@ const VideoCallPage = () => {
                     </p>
 
                     <div className="bg-gray-700 p-4 rounded-lg text-left mb-6 text-sm">
-                        <h3 className="font-bold text-lg mb-2 text-blue-400">🔧 Troubleshooting Guide</h3>
+                        <h3 className="font-bold text-lg mb-2 text-cta">🔧 Troubleshooting Guide</h3>
                         <p className="mb-2 text-yellow-300 font-semibold">
                             Based on the error, we detected:
                             {permissionDenied.includes('NotReadableError') ? (
@@ -430,7 +426,7 @@ const VideoCallPage = () => {
                     </div>
 
                     <div className="bg-gray-700 p-4 rounded-lg text-left mb-6 text-sm">
-                        <h3 className="font-bold text-lg mb-2 text-green-400">🧪 Diagnostic Test</h3>
+                        <h3 className="font-bold text-lg mb-2 text-primary">🧪 Diagnostic Test</h3>
                         <p className="mb-2">Click below to test if your browser can access the camera directly (ignoring the app).</p>
                         <button
                             onClick={async () => {
@@ -442,7 +438,7 @@ const VideoCallPage = () => {
                                     alert(`❌ FAILURE: Browser CANNOT access device. \nError: ${err.name} - ${err.message}\n\nPlease check Windows Privacy Settings or Driver drivers.`);
                                 }
                             }}
-                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold w-full transition-colors"
+                            className="bg-primary hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold w-full transition-colors"
                         >
                             Run Native Camera Test
                         </button>
@@ -451,13 +447,13 @@ const VideoCallPage = () => {
                     <div className="flex gap-4 justify-center">
                         <button
                             onClick={() => window.location.reload()}
-                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-semibold transition-colors"
+                            className="bg-cta hover:bg-teal-700 text-white px-6 py-2 rounded-full font-semibold transition-colors"
                         >
                             Refresh Page
                         </button>
                         <button
-                            onClick={() => navigate('/dashboard')}
-                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-full font-semibold transition-colors"
+                            onClick={() => navigate('/')}
+                            className="bg-accent hover:bg-gray-700 text-white px-6 py-2 rounded-full font-semibold transition-colors"
                         >
                             Go Back
                         </button>
@@ -482,7 +478,7 @@ const VideoCallPage = () => {
                             </div>
                         )}
                     </div>
-                    <div className="p-6 bg-gray-800 flex justify-center items-center gap-4 shrink-0">
+                    <div className="p-6 bg-gray-800/90 backdrop-blur-md flex justify-center items-center gap-4 shrink-0 border-t border-gray-700">
                         <CustomCallControls onLeave={handleEndCall} />
                     </div>
                 </StreamCall>

@@ -1,1 +1,76 @@
+@import url('https://fonts.googleapis.com/css2?family=Libre+Baskerville:ital,wght@0,400;0,700;1,400&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 @import "tailwindcss";
+
+@theme {
+  --color-primary: #4A7C59;
+  --color-secondary: #D1E8E2;
+  --color-accent: #718096;
+
+  --color-cta: #2C7A7B;
+  --color-cta--hover: #285E61;
+
+  --color-text-primary: #1F2933;
+  --color-text-secondary: #4A5568;
+  --color-text-muted: #718096;
+
+  --color-background-light: #F7FAFC;
+  --color-background-subtle: #EDF2F7;
+
+  --font-heading: "Libre Baskerville", serif;
+  --font-body: "Plus Jakarta Sans", sans-serif;
+
+  --shadow-soft: 0 8px 30px rgba(0, 0, 0, 0.04);
+
+  --radius-xl: 1rem;
+  --radius-2xl: 1.5rem;
+}
+
+@layer base {
+  body {
+    background-color: var(--color-background-light);
+    color: var(--color-text-primary);
+    font-family: var(--font-body);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    color: var(--color-text-primary);
+    font-family: var(--font-heading);
+  }
+}
+
+@layer utilities {
+  .animate-marquee {
+    animation: marquee 40s linear infinite;
+  }
+
+  .animate-marquee-reverse {
+    animation: marquee-reverse 40s linear infinite;
+  }
+
+  @keyframes marquee {
+    0% {
+      transform: translateX(0);
+    }
+
+    100% {
+      transform: translateX(-50%);
+    }
+  }
+
+  @keyframes marquee-reverse {
+    0% {
+      transform: translateX(-50%);
+    }
+
+    100% {
+      transform: translateX(0);
+    }
+  }
+}

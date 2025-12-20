@@ -1,6 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axiosInstance';
 import { useSearchParams } from 'react-router-dom';
+import Card from './ui/Card';
+import Button from './ui/Button';
+import Input from './ui/Input';
+import Badge from './ui/Badge';
 
 const FindDoctorsSection = () => {
     const [searchParams] = useSearchParams();
@@ -18,7 +22,6 @@ const FindDoctorsSection = () => {
         const specParam = searchParams.get('specialization');
         if (specParam) {
             setSpecialization(specParam);
-            // Trigger search immediately if param exists
             handleSearch(specParam);
         }
     }, [searchParams]);
@@ -48,7 +51,6 @@ const FindDoctorsSection = () => {
             }
         } catch (error) {
             console.error('Error searching doctors:', error);
-            // alert('Failed to search doctors. Please try again.'); // Muted alert to avoid double alerts on mount
         } finally {
             setLoading(false);
         }
@@ -85,6 +87,12 @@ const FindDoctorsSection = () => {
     };
 
     const handleViewAvailability = async (doctor) => {
+        if (selectedDoctor?._id === doctor._id) {
+            setSelectedDoctor(null); // Toggle off
+            setAvailability(null);
+            return;
+        }
+
         setSelectedDoctor(doctor);
         setAvailability(null);
         try {
@@ -121,7 +129,6 @@ const FindDoctorsSection = () => {
 
             if (data.status === 'success') {
                 alert('Appointment booked successfully!');
-                // Refresh availability to show the slot as booked
                 handleViewAvailability(selectedDoctor);
             }
         } catch (error) {
@@ -133,135 +140,146 @@ const FindDoctorsSection = () => {
     };
 
     return (
-        <div className="bg-white rounded-lg shadow-sm p-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Find Doctors</h2>
+        <div className="flex flex-col lg:flex-row gap-8">
+            {/* Sidebar Filters - Sticky on Desktop */}
+            <div className="lg:w-1/4">
+                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 sticky top-24">
+                    <h2 className="text-xl font-heading font-bold text-text-primary mb-6">Filters</h2>
 
-            {/* Search Section */}
-            <div className="bg-gray-50 p-6 rounded-lg mb-8 border border-gray-100">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 items-end">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
-                        <input
-                            type="text"
+                    <div className="space-y-6">
+                        <Input
+                            label="Search by City"
                             value={city}
                             onChange={(e) => setCity(e.target.value)}
                             placeholder="e.g. New York"
-                            className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
                         />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Specialization</label>
-                        <select
-                            value={specialization}
-                            onChange={(e) => setSpecialization(e.target.value)}
-                            className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
-                        >
-                            <option value="">All Specializations</option>
-                            <option value="Cardiologist">Cardiologist</option>
-                            <option value="Dermatologist">Dermatologist</option>
-                            <option value="Pediatrician">Pediatrician</option>
-                            <option value="Neurologist">Neurologist</option>
-                            <option value="General Physician">General Physician</option>
-                            <option value="Gastroenterologist">Gastroenterologist</option>
-                            <option value="Gynecologist">Gynecologist</option>
-                            <option value="Orthopedic">Orthopedic</option>
-                            <option value="ENT Specialist">ENT Specialist</option>
-                            <option value="Psychiatrist">Psychiatrist</option>
-                            <option value="Dentist">Dentist</option>
-                            <option value="Urologist">Urologist</option>
-                            <option value="Pulmonologist">Pulmonologist</option>
-                            <option value="Ophthalmologist">Ophthalmologist</option>
-                            <option value="Endocrinologist">Endocrinologist</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
-                        <input
+
+                        <div className="flex flex-col space-y-1.5">
+                            <label className="text-sm font-medium text-text-secondary block mb-1">Specialization</label>
+                            <select
+                                value={specialization}
+                                onChange={(e) => setSpecialization(e.target.value)}
+                                className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200"
+                            >
+                                <option value="">All Specializations</option>
+                                <option value="Cardiologist">Cardiologist</option>
+                                <option value="Dermatologist">Dermatologist</option>
+                                <option value="Pediatrician">Pediatrician</option>
+                                <option value="Neurologist">Neurologist</option>
+                                <option value="General Physician">General Physician</option>
+                                <option value="Gastroenterologist">Gastroenterologist</option>
+                                <option value="Gynecologist">Gynecologist</option>
+                                <option value="Orthopedic">Orthopedic</option>
+                                <option value="ENT Specialist">ENT Specialist</option>
+                                <option value="Psychiatrist">Psychiatrist</option>
+                                <option value="Dentist">Dentist</option>
+                                <option value="Urologist">Urologist</option>
+                                <option value="Pulmonologist">Pulmonologist</option>
+                                <option value="Ophthalmologist">Ophthalmologist</option>
+                                <option value="Endocrinologist">Endocrinologist</option>
+                            </select>
+                        </div>
+
+                        <Input
+                            label="Preferred Date"
                             type="date"
                             value={date}
                             onChange={(e) => setDate(e.target.value)}
-                            className="w-full p-2 border rounded focus:ring-blue-500 focus:border-blue-500"
                         />
-                    </div>
-                    <div className="flex space-x-2">
-                        <button
-                            onClick={handleSearch}
-                            disabled={loading}
-                            className="flex-1 bg-blue-600 text-white p-2 rounded hover:bg-blue-700 disabled:bg-blue-300 transition"
-                        >
-                            {loading ? 'Searching...' : 'Search'}
-                        </button>
-                        <button
-                            onClick={handleUseLocation}
-                            disabled={loading}
-                            className="bg-white border border-gray-300 text-gray-700 p-2 rounded hover:bg-gray-50 transition"
-                            title="Use My Location"
-                        >
-                            📍
-                        </button>
+
+                        <div className="flex flex-col gap-3 pt-2">
+                            <Button onClick={() => handleSearch()} disabled={loading} className="w-full">
+                                {loading ? 'Searching...' : 'Search Doctors'}
+                            </Button>
+                            <Button variant="secondary" onClick={handleUseLocation} disabled={loading} className="w-full">
+                                Use My Location
+                            </Button>
+                        </div>
                     </div>
                 </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                {/* Results List */}
-                <div className="lg:col-span-2 space-y-4">
-                    {doctors.length === 0 && !loading && (
-                        <p className="text-gray-500 text-center py-8 bg-gray-50 rounded-lg border border-dashed border-gray-300">
-                            No doctors found. Try adjusting your search.
-                        </p>
-                    )}
-                    {doctors.map((doctor) => (
-                        <div key={doctor._id} className="bg-white border border-gray-100 p-6 rounded-lg shadow-sm hover:shadow-md transition flex justify-between items-start">
-                            <div>
-                                <h3 className="text-xl font-bold text-gray-800">{doctor.name}</h3>
-                                <p className="text-blue-600 font-medium">{doctor.specialization}</p>
-                                <p className="text-gray-600">{doctor.hospitalName}</p>
-                                <p className="text-gray-500 text-sm mt-1">📍 {doctor.location.city}, {doctor.location.state}</p>
-                            </div>
-                            <button
-                                onClick={() => handleViewAvailability(doctor)}
-                                className="px-4 py-2 border border-blue-600 text-blue-600 rounded hover:bg-blue-50 transition"
-                            >
-                                View Availability
-                            </button>
-                        </div>
-                    ))}
-                </div>
-
-                {/* Availability Panel */}
-                <div className="lg:col-span-1">
-                    {selectedDoctor && (
-                        <div className="bg-white p-6 rounded-lg shadow-md border border-gray-100 sticky top-24">
-                            <h3 className="text-lg font-bold text-gray-800 mb-2">Availability for {selectedDoctor.name}</h3>
-                            <p className="text-gray-600 mb-4">Date: {date}</p>
-
-                            {availability ? (
-                                availability.slots.length > 0 ? (
-                                    <div className="grid grid-cols-2 gap-2">
-                                        {availability.slots.map((slot, index) => (
-                                            <button
-                                                key={index}
-                                                disabled={slot.isBooked || bookingLoading}
-                                                onClick={() => !slot.isBooked && handleBookSlot(slot)}
-                                                className={`p-2 text-sm rounded text-center transition ${slot.isBooked
-                                                    ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                                                    : 'bg-green-50 text-green-700 border border-green-200 hover:bg-green-100'
-                                                    }`}
-                                            >
-                                                {slot.startTime}
-                                            </button>
-                                        ))}
+            {/* Results Grid */}
+            <div className="lg:w-3/4">
+                {doctors.length === 0 && !loading ? (
+                    <div className="text-center py-20 bg-white rounded-2xl border border-dashed border-gray-200">
+                        <div className="text-6xl mb-4">🩺</div>
+                        <h3 className="text-xl font-bold text-text-primary">No doctors found</h3>
+                        <p className="text-text-secondary mt-2">Try adjusting your filters or search a different area.</p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        {doctors.map((doctor) => (
+                            <Card key={doctor._id} className={`p-0 overflow-hidden hover:shadow-lg transition-all duration-300 border border-gray-100 ${selectedDoctor?._id === doctor._id ? 'ring-2 ring-cta' : ''}`}>
+                                <div className="p-6">
+                                    <div className="flex justify-between items-start mb-4">
+                                        <div>
+                                            <h3 className="text-xl font-heading font-bold text-text-primary">{doctor.name}</h3>
+                                            <p className="text-cta font-medium text-sm">{doctor.specialization}</p>
+                                        </div>
+                                        <Badge variant="primary">Available</Badge>
                                     </div>
-                                ) : (
-                                    <p className="text-gray-500">No slots available for this date.</p>
-                                )
-                            ) : (
-                                <p className="text-gray-500">Loading slots...</p>
-                            )}
-                        </div>
-                    )}
-                </div>
+
+                                    <div className="space-y-2 mb-6">
+                                        <div className="flex items-center text-text-secondary text-sm">
+                                            <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" /></svg>
+                                            {doctor.hospitalName}
+                                        </div>
+                                        <div className="flex items-center text-text-secondary text-sm">
+                                            <svg className="w-4 h-4 mr-2 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
+                                            {doctor.location.city}, {doctor.location.state}
+                                        </div>
+                                    </div>
+
+                                    <Button
+                                        variant={selectedDoctor?._id === doctor._id ? "primary" : "secondary"}
+                                        className="w-full justify-center"
+                                        onClick={() => handleViewAvailability(doctor)}
+                                    >
+                                        {selectedDoctor?._id === doctor._id ? 'Hide Availability' : 'View Availability'}
+                                    </Button>
+
+                                    {/* Inline Availability Panel */}
+                                    {selectedDoctor?._id === doctor._id && (
+                                        <div className="mt-6 pt-6 border-t border-gray-100 animate-fadeIn">
+                                            <h4 className="font-bold text-text-primary text-sm mb-3">Available Slots for {date}:</h4>
+
+                                            {availability ? (
+                                                availability.slots.length > 0 ? (
+                                                    <div className="grid grid-cols-3 gap-2">
+                                                        {availability.slots.map((slot, index) => (
+                                                            <button
+                                                                key={index}
+                                                                disabled={slot.isBooked || bookingLoading}
+                                                                onClick={() => !slot.isBooked && handleBookSlot(slot)}
+                                                                className={`
+                                                                    py-1.5 px-1 text-xs font-medium rounded transition-colors
+                                                                    ${slot.isBooked
+                                                                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed line-through'
+                                                                        : 'bg-green-50 text-green-700 hover:bg-green-100 border border-green-200'}
+                                                                `}
+                                                            >
+                                                                {slot.startTime}
+                                                            </button>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <div className="text-center py-4 text-text-muted text-sm bg-gray-50 rounded">
+                                                        No slots available
+                                                    </div>
+                                                )
+                                            ) : (
+                                                <div className="flex justify-center py-4">
+                                                    <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-cta"></div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
+                            </Card>
+                        ))}
+                    </div>
+                )}
             </div>
         </div>
     );

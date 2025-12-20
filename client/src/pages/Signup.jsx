@@ -1,39 +1,107 @@
 import React, { useState } from 'react';
 import axios from '../utils/axiosInstance';
 import { useNavigate, Link } from 'react-router-dom';
+import Card from '../components/ui/Card';
+import Input from '../components/ui/Input';
+import Button from '../components/ui/Button';
 
 const Signup = () => {
     const [formData, setFormData] = useState({ name: '', email: '', password: '', role: 'patient' });
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState('');
     const navigate = useNavigate();
 
-    const handleChange = (e) => setFormData({ ...formData, [e.target.name]: e.target.value });
+    const handleChange = (e) => {
+        setFormData({ ...formData, [e.target.name]: e.target.value });
+        setError('');
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setIsLoading(true);
+        setError('');
+
         try {
             await axios.post('http://localhost:5000/api/auth/signup', formData, { withCredentials: true });
+            // Alert is okay here for MVP, or could use a toast/modal. Keeping simple for now but using browser alert is jarring.
+            // Using a temporary success state or direct navigation is better.
             alert('Signup successful! Please check your email for OTP.');
-            // navigate('/login');
             navigate('/verify-otp', { state: { email: formData.email } });
         } catch (error) {
-            alert(error.response?.data?.message || 'Signup failed');
+            setError(error.response?.data?.message || 'Signup failed. Please try again.');
+            setIsLoading(false);
         }
     };
 
     return (
-        <div className="min-h-screen flex items-center justify-center bg-gray-100">
-            <form onSubmit={handleSubmit} className="bg-white p-8 rounded-lg shadow-md w-96">
-                <h2 className="text-2xl font-bold mb-6 text-center">Signup</h2>
-                <input type="text" name="name" placeholder="Name" onChange={handleChange} className="w-full p-2 mb-4 border rounded" required />
-                <input type="email" name="email" placeholder="Email" onChange={handleChange} className="w-full p-2 mb-4 border rounded" required />
-                <input type="password" name="password" placeholder="Password" onChange={handleChange} className="w-full p-2 mb-4 border rounded" required />
-                <select name="role" onChange={handleChange} className="w-full p-2 mb-4 border rounded">
-                    <option value="patient">Patient</option>
-                    <option value="doctor">Doctor</option>
-                </select>
-                <button type="submit" className="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Signup</button>
-                <p className="mt-4 text-center text-sm">Already have an account? <Link to="/login" className="text-blue-600">Login</Link></p>
-            </form>
+        <div className="min-h-screen flex items-center justify-center bg-background-light px-4 py-12">
+            <Card className="w-full max-w-md p-8 md:p-10 shadow-xl border-t-4 border-cta">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">Create Account</h1>
+                    <p className="text-text-secondary">Join MedSync for better healthcare</p>
+                </div>
+
+                {error && (
+                    <div className="mb-6 p-4 bg-red-50 border border-red-100 text-red-600 rounded-xl text-sm">
+                        {error}
+                    </div>
+                )}
+
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <Input
+                        label="Full Name"
+                        type="text"
+                        name="name"
+                        placeholder="John Doe"
+                        onChange={handleChange}
+                        required
+                    />
+                    <Input
+                        label="Email Address"
+                        type="email"
+                        name="email"
+                        placeholder="you@example.com"
+                        onChange={handleChange}
+                        required
+                    />
+                    <Input
+                        label="Password"
+                        type="password"
+                        name="password"
+                        placeholder="••••••••"
+                        onChange={handleChange}
+                        required
+                    />
+
+                    <div className="flex flex-col space-y-1.5">
+                        <label className="text-sm font-medium text-text-secondary block mb-1">I am a...</label>
+                        <select
+                            name="role"
+                            onChange={handleChange}
+                            className="w-full px-4 py-2.5 bg-white border border-gray-200 rounded-xl text-text-primary focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-colors duration-200"
+                        >
+                            <option value="patient">Patient</option>
+                            <option value="doctor">Doctor</option>
+                        </select>
+                    </div>
+
+                    <Button
+                        type="submit"
+                        className="w-full"
+                        size="md"
+                        disabled={isLoading}
+                    >
+                        {isLoading ? 'Creating Account...' : 'Sign Up'}
+                    </Button>
+                </form>
+
+                <div className="mt-8 text-center text-sm text-text-secondary">
+                    Already have an account?{' '}
+                    <Link to="/login" className="text-cta font-semibold hover:text-cta-hover">
+                        Log In
+                    </Link>
+                </div>
+            </Card>
         </div>
     );
 };

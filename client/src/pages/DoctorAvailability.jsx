@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
 import { FaPlus, FaTrash, FaSave, FaClock } from 'react-icons/fa';
 
 const DAYS = [
@@ -27,26 +30,6 @@ const DoctorAvailability = () => {
     const fetchAvailability = async () => {
         try {
             const token = localStorage.getItem('token');
-            // We need to fetch the doctor's profile to get current availability
-            // Assuming we have an endpoint for 'me' or we use the profile update endpoint to get data?
-            // Usually GET /me/profile would exist, but let's check existing routes.
-            // If not, we might need to rely on what we have. 
-            // In doctorController, createOrUpdateMyDoctorProfile returns the doctor.
-            // Let's assume we can fetch it via a GET request if mapped, OR we use the user's doctor ID if stored.
-            // Wait, looking at routes... `router.post('/me/profile', ...)` is there. 
-            // Is there a GET /me? 
-            // Let's assume for now we might need to add GET /me/profile or use a known endpoint.
-            // Actually, let's just make a specialized GET for availability if needed, but standard REST usually has GET /me for users.
-            // For now, I'll attempt to GET /api/v1/doctors/me/profile if it existed, but it doesn't seem to.
-            // I'll check if I can add `getDoctorProfile` to the controller/routes quickly.
-            // Limitation: I am in the middle of writing this file.
-            // WORKAROUND: I will fetch the doctor by 'nearby' query or similar? No that's bad.
-            // Let's look at `doctorRoutes.js` again. `router.get('/:id/availability')`.
-            // I can use that IF I know my own doctor ID.
-            // The user context usually has the user ID. 
-            // Maybe I should add `router.get('/me', ...)` to `doctorRoutes.js`.
-            // I will add that separately. For now, I'll write this component assuming I can GET `/api/v1/doctors/me`.
-
             const res = await axios.get('http://localhost:5000/api/v1/doctors/me', {
                 headers: { Authorization: `Bearer ${token}` }
             });
@@ -57,7 +40,6 @@ const DoctorAvailability = () => {
             setLoading(false);
         } catch (err) {
             console.error(err);
-            // If 404, maybe no profile yet, which is fine.
             setLoading(false);
         }
     };
@@ -90,6 +72,7 @@ const DoctorAvailability = () => {
                 headers: { Authorization: `Bearer ${token}` }
             });
             setSuccessMessage('Availability updated successfully!');
+            setTimeout(() => setSuccessMessage(''), 3000);
             setSaving(false);
         } catch (err) {
             console.error(err);
@@ -98,100 +81,102 @@ const DoctorAvailability = () => {
         }
     };
 
-    const getSlotsForDay = (dayId) => {
-        return availability.filter(slot => slot.dayOfWeek === dayId);
-    };
-
-    // Helper to find the logic index in the main state array
-    const getRealIndex = (dayId, slotsOnDay, relativeIndex) => {
-        // This is tricky because we filter. 
-        // Easier approach: Just map over the main availability array in logic, 
-        // but for rendering by Data Transfer Object (DTO) we group.
-        // Actually, let's just render the list flat? No, grouped by day is better UI.
-        // Let's iterate DAYS and then find slots in availability array.
-        // We need the index to update.
-    };
-
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-background-light flex flex-col font-body">
             <Navbar />
-            <div className="flex-1 max-w-4xl mx-auto w-full p-8">
-                <div className="flex justify-between items-center mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800">Manage Availability</h1>
-                    <button
+            <div className="flex-1 max-w-5xl mx-auto w-full p-4 md:p-8">
+                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                    <div>
+                        <h1 className="text-3xl font-heading font-bold text-text-primary">Manage Availability</h1>
+                        <p className="text-text-secondary mt-1">Set your weekly schedule for patient appointments.</p>
+                    </div>
+                    <Button
                         onClick={handleSave}
                         disabled={saving}
-                        className="flex items-center px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition shadow-md disabled:bg-blue-300"
+                        size="lg"
+                        className="shadow-lg shadow-cta/20 flex items-center"
                     >
                         <FaSave className="mr-2" />
                         {saving ? 'Saving...' : 'Save Changes'}
-                    </button>
+                    </Button>
                 </div>
 
                 {error && (
-                    <div className="bg-red-100 border-l-4 border-red-500 text-red-700 p-4 mb-6" role="alert">
-                        <p>{error}</p>
+                    <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-xl mb-6 flex items-center">
+                        <span className="mr-2">⚠️</span> {error}
                     </div>
                 )}
 
                 {successMessage && (
-                    <div className="bg-green-100 border-l-4 border-green-500 text-green-700 p-4 mb-6" role="alert">
-                        <p>{successMessage}</p>
+                    <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-xl mb-6 flex items-center">
+                        <span className="mr-2">✅</span> {successMessage}
                     </div>
                 )}
 
-                <div className="space-y-6">
-                    {DAYS.map((day) => (
-                        <div key={day.id} className="bg-white p-6 rounded-xl shadow-sm border border-gray-100">
-                            <div className="flex justify-between items-center mb-4">
-                                <h3 className="text-xl font-semibold text-gray-800 flex items-center">
-                                    <span className="w-24">{day.name}</span>
-                                </h3>
-                                <button
-                                    onClick={() => handleAddSlot(day.id)}
-                                    className="text-sm px-3 py-1 bg-blue-50 text-blue-600 rounded-md hover:bg-blue-100 transition flex items-center"
-                                >
-                                    <FaPlus className="mr-1" /> Add Slot
-                                </button>
-                            </div>
+                <div className="space-y-4">
+                    {DAYS.map((day) => {
+                        const daySlots = availability
+                            .map((slot, idx) => ({ ...slot, originalIndex: idx }))
+                            .filter(slot => slot.dayOfWeek === day.id);
 
-                            <div className="space-y-3 pl-4 border-l-2 border-gray-100">
-                                {availability.map((slot, index) => {
-                                    if (slot.dayOfWeek !== day.id) return null;
-                                    return (
-                                        <div key={index} className="flex items-center gap-4">
-                                            <div className="flex items-center bg-gray-50 px-3 py-2 rounded-md">
-                                                <FaClock className="text-gray-400 mr-2" />
-                                                <input
-                                                    type="time"
-                                                    value={slot.startTime}
-                                                    onChange={(e) => handleChangeSlot(index, 'startTime', e.target.value)}
-                                                    className="bg-transparent outline-none text-gray-700 font-medium"
-                                                />
-                                                <span className="mx-2 text-gray-400">-</span>
-                                                <input
-                                                    type="time"
-                                                    value={slot.endTime}
-                                                    onChange={(e) => handleChangeSlot(index, 'endTime', e.target.value)}
-                                                    className="bg-transparent outline-none text-gray-700 font-medium"
-                                                />
+                        const hasSlots = daySlots.length > 0;
+
+                        return (
+                            <Card key={day.id} className={`transition-all duration-200 ${hasSlots ? 'border-gray-200' : 'border-gray-100 bg-gray-50/50'}`}>
+                                <div className="p-5 flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                                    <div className="md:w-1/4">
+                                        <h3 className={`text-lg font-heading font-bold ${hasSlots ? 'text-text-primary' : 'text-text-secondary'}`}>
+                                            {day.name}
+                                        </h3>
+                                        <Button
+                                            variant="ghost"
+                                            size="sm"
+                                            onClick={() => handleAddSlot(day.id)}
+                                            className="mt-2 text-cta hover:bg-blue-50 pl-0 md:pl-2 justify-start"
+                                        >
+                                            <FaPlus className="mr-1" /> Add Slot
+                                        </Button>
+                                    </div>
+
+                                    <div className="md:w-3/4 space-y-3">
+                                        {hasSlots ? (
+                                            daySlots.map((slot) => (
+                                                <div key={slot.originalIndex} className="flex items-center gap-3 bg-white border border-gray-200 p-2 rounded-lg shadow-sm">
+                                                    <div className="flex items-center flex-1 px-3 py-1 bg-gray-50 rounded text-text-primary font-medium">
+                                                        <FaClock className="text-text-muted mr-3" />
+                                                        <input
+                                                            type="time"
+                                                            value={slot.startTime}
+                                                            onChange={(e) => handleChangeSlot(slot.originalIndex, 'startTime', e.target.value)}
+                                                            className="bg-transparent outline-none cursor-pointer focus:text-cta transition-colors"
+                                                        />
+                                                        <span className="mx-3 text-gray-400 font-light">to</span>
+                                                        <input
+                                                            type="time"
+                                                            value={slot.endTime}
+                                                            onChange={(e) => handleChangeSlot(slot.originalIndex, 'endTime', e.target.value)}
+                                                            className="bg-transparent outline-none cursor-pointer focus:text-cta transition-colors"
+                                                        />
+                                                    </div>
+                                                    <button
+                                                        onClick={() => handleRemoveSlot(slot.originalIndex)}
+                                                        className="text-text-muted hover:text-red-500 p-2 rounded-lg hover:bg-red-50 transition"
+                                                        title="Remove slot"
+                                                    >
+                                                        <FaTrash size={14} />
+                                                    </button>
+                                                </div>
+                                            ))
+                                        ) : (
+                                            <div className="h-full flex items-center py-2">
+                                                <p className="text-text-muted text-sm italic">Unavailable</p>
                                             </div>
-                                            <button
-                                                onClick={() => handleRemoveSlot(index)}
-                                                className="text-red-500 hover:text-red-700 p-2 rounded-full hover:bg-red-50 transition"
-                                                title="Remove slot"
-                                            >
-                                                <FaTrash />
-                                            </button>
-                                        </div>
-                                    );
-                                })}
-                                {!availability.some(slot => slot.dayOfWeek === day.id) && (
-                                    <p className="text-gray-400 italic text-sm">No availability set</p>
-                                )}
-                            </div>
-                        </div>
-                    ))}
+                                        )}
+                                    </div>
+                                </div>
+                            </Card>
+                        );
+                    })}
                 </div>
             </div>
         </div>

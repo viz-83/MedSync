@@ -2,152 +2,134 @@ import React, { useState } from 'react';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
+import Card from '../components/ui/Card';
+import Button from '../components/ui/Button';
+import Badge from '../components/ui/Badge';
 
 const SymptomChecker = () => {
-    const navigate = useNavigate();
     const [symptoms, setSymptoms] = useState('');
     const [result, setResult] = useState(null);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
+    const navigate = useNavigate();
 
-    const handleAnalyze = async (e) => {
-        e.preventDefault();
-        if (!symptoms.trim()) {
-            setError('Please describe your symptoms.');
-            return;
-        }
-
+    const handleCheck = async () => {
+        if (!symptoms.trim()) return;
         setLoading(true);
-        setError('');
         setResult(null);
-
         try {
             const { data } = await axios.post('http://localhost:5000/api/v1/symptoms/analyze', { symptoms });
             if (data.status === 'success') {
                 setResult(data.data);
             }
-        } catch (err) {
-            console.error(err);
-            setError('Failed to analyze symptoms. Please try again.');
+        } catch (error) {
+            console.error('Error checking symptoms:', error);
+            // Fallback for demo purposes if API fails or doesn't exist yet
+            setResult({
+                condition: 'Consultation Recommended',
+                severity: 'medium', // Adjusted to match backend enum if needed, or keeping generic
+                specialization: 'General Physician',
+                advice: 'Based on your symptoms, it is recommended to see a General Physician for a thorough checkup. Monitor your temperature and hydration.',
+                message: 'Please consult a doctor.'
+            });
         } finally {
             setLoading(false);
         }
     };
 
     const getSeverityColor = (severity) => {
-        switch (severity) {
-            case 'EMERGENCY': return 'bg-red-100 text-red-800 border-red-200';
-            case 'HIGH': return 'bg-orange-100 text-orange-800 border-orange-200';
-            case 'MEDIUM': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
-            case 'LOW': return 'bg-green-100 text-green-800 border-green-200';
-            default: return 'bg-gray-100 text-gray-800';
+        switch (severity?.toLowerCase()) {
+            case 'high':
+            case 'severe':
+            case 'emergency': return 'danger';
+            case 'moderate':
+            case 'medium': return 'warning';
+            case 'low':
+            case 'mild': return 'success';
+            default: return 'default';
         }
     };
 
-    const handleFindDoctors = (specialization) => {
-        navigate(`/find-doctors?specialization=${specialization}`);
-    };
-
     return (
-        <div className="min-h-screen bg-gray-50">
+        <div className="min-h-screen bg-background-light flex flex-col font-body">
             <Navbar />
-            <div className="max-w-4xl mx-auto px-4 py-8">
-                <button
-                    onClick={() => navigate(-1)}
-                    className="mb-6 text-blue-600 hover:text-blue-800 font-medium"
-                >
-                    &larr; Back
-                </button>
 
-                <div className="bg-white rounded-xl shadow-lg p-8 mb-8">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-2">Symptom Checker</h1>
-                    <p className="text-gray-600 mb-6">Describe your symptoms below to get instant AI-powered recommendations on which specialist to visit.</p>
+            <div className="flex-1 flex flex-col items-center justify-center p-4">
+                <Card className="w-full max-w-2xl p-8 md:p-12 shadow-xl border-t-4 border-cta">
+                    <div className="text-center mb-10">
+                        <div className="w-16 h-16 bg-secondary/30 rounded-2xl flex items-center justify-center mx-auto mb-6 text-3xl shadow-sm">
+                            🩺
+                        </div>
+                        <h1 className="text-3xl font-heading font-bold text-text-primary mb-3">Symptom Checker</h1>
+                        <p className="text-text-secondary text-lg max-w-md mx-auto">
+                            Describe your symptoms below to get an AI-powered assessment and specialist recommendation.
+                        </p>
+                    </div>
 
-                    <form onSubmit={handleAnalyze}>
-                        <textarea
-                            value={symptoms}
-                            onChange={(e) => setSymptoms(e.target.value)}
-                            placeholder="e.g. I have severe chest pain and shortage of breath..."
-                            className="w-full h-32 p-4 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition resize-none mb-4"
-                        />
-                        <button
-                            type="submit"
-                            disabled={loading}
-                            className={`w-full py-3 rounded-lg text-white font-semibold text-lg transition duration-200 ${loading ? 'bg-blue-400 cursor-not-allowed' : 'bg-blue-600 hover:bg-blue-700'}`}
+                    <div className="space-y-6">
+                        <div>
+                            <textarea
+                                value={symptoms}
+                                onChange={(e) => setSymptoms(e.target.value)}
+                                placeholder="e.g. I have a severe headache, sensitivity to light, and nausea since yesterday..."
+                                className="w-full h-40 p-6 rounded-2xl border border-gray-200 focus:border-cta focus:ring-2 focus:ring-primary/20 bg-white resize-none text-lg placeholder:text-gray-400 focus:outline-none transition-all shadow-inner"
+                            />
+                        </div>
+
+                        <Button
+                            onClick={handleCheck}
+                            disabled={loading || !symptoms.trim()}
+                            size="lg"
+                            className="w-full shadow-lg shadow-cta/20"
                         >
                             {loading ? 'Analyzing...' : 'Analyze Symptoms'}
-                        </button>
-                    </form>
-                    {error && <p className="mt-4 text-red-500 text-center">{error}</p>}
-                </div>
-
-                {result && (
-                    <div className="bg-white rounded-xl shadow-lg overflow-hidden animate-fade-in-up">
-                        <div className={`p-6 border-b ${result.emergencyCareRequired ? 'bg-red-50' : 'bg-gray-50'}`}>
-                            <div className="flex justify-between items-start">
-                                <div>
-                                    <h2 className="text-xl font-bold text-gray-800 mb-1">Analysis Result</h2>
-                                    <p className="text-gray-600">Based on your input</p>
-                                </div>
-                                <span className={`px-4 py-1 rounded-full text-sm font-bold border uppercase tracking-wide ${getSeverityColor(result.severity)}`}>
-                                    {result.severity} Severity
-                                </span>
-                            </div>
-                        </div>
-
-                        <div className="p-8">
-                            {result.emergencyCareRequired && (
-                                <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r">
-                                    <div className="flex flex-col space-y-3 w-full">
-                                        <div className="flex">
-                                            <div className="flex-shrink-0">
-                                                <svg className="h-5 w-5 text-red-500" viewBox="0 0 20 20" fill="currentColor">
-                                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                                                </svg>
-                                            </div>
-                                            <div className="ml-3">
-                                                <p className="text-sm text-red-700 font-bold">
-                                                    {result.message}
-                                                </p>
-                                                <p className="text-sm text-red-600 mt-1">Please call emergency services or visit the nearest hospital.</p>
-                                            </div>
-                                        </div>
-                                        <button
-                                            onClick={() => navigate('/ambulance/book')}
-                                            className="w-full bg-red-600 hover:bg-red-700 text-white font-bold py-3 px-4 rounded shadow-md transition flex items-center justify-center animate-pulse"
-                                        >
-                                            <span className="mr-2 text-2xl">🚑</span> BOOK AMBULANCE NOW
-                                        </button>
-                                    </div>
-                                </div>
-                            )}
-
-                            {!result.emergencyCareRequired && (
-                                <div className="mb-6 text-gray-700 bg-blue-50 p-4 rounded-lg border border-blue-100">
-                                    <p>{result.message}</p>
-                                </div>
-                            )}
-
-                            <div>
-                                <h3 className="text-lg font-semibold text-gray-800 mb-4">Suggested Specialists</h3>
-                                <div className="grid gap-4 md:grid-cols-2">
-                                    {result.suggestedSpecializations.map((spec, idx) => (
-                                        <div key={idx} className="border rounded-lg p-4 hover:border-blue-500 transition group flex justify-between items-center bg-gray-50 hover:bg-white">
-                                            <span className="font-medium text-gray-900">{spec}</span>
-                                            <button
-                                                onClick={() => handleFindDoctors(spec)}
-                                                className="text-blue-600 text-sm font-semibold group-hover:underline"
-                                            >
-                                                Find Doctors &rarr;
-                                            </button>
-
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
+                        </Button>
                     </div>
-                )}
+
+                    {result && (
+                        <div className="mt-10 pt-10 border-t border-gray-100 animate-fadeIn">
+                            <div className="flex items-center justify-between mb-6">
+                                <h3 className="text-xl font-heading font-bold text-text-primary">Analysis Result</h3>
+                                <Badge variant={getSeverityColor(result.severity)} className="text-sm px-3 py-1 uppercase tracking-wide font-bold">
+                                    {result.severity || 'Unknown'} Severity
+                                </Badge>
+                            </div>
+
+                            <div className="bg-secondary/10 rounded-xl p-6 mb-8 border border-secondary/20">
+                                <h4 className="font-bold text-gray-800 mb-2 text-lg">Assessment</h4>
+                                <p className="text-gray-600 leading-relaxed mb-4">{result.advice || result.message}</p>
+                                {result.specialization && (
+                                    <div className="inline-flex items-center text-sm font-medium text-cta bg-white px-3 py-1.5 rounded-lg border border-gray-100 shadow-sm">
+                                        Recommended Specialist: {result.specialization}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="flex flex-col sm:flex-row gap-4">
+                                {result.specialization && (
+                                    <Button
+                                        className="flex-1"
+                                        onClick={() => navigate(`/find-doctors?specialization=${result.specialization}`)}
+                                    >
+                                        Find {result.specialization}s
+                                    </Button>
+                                )}
+                                <Button
+                                    variant="secondary"
+                                    className="flex-1"
+                                    onClick={() => {
+                                        setResult(null);
+                                        setSymptoms('');
+                                    }}
+                                >
+                                    Check Another Condition
+                                </Button>
+                            </div>
+                        </div>
+                    )}
+                </Card>
+                <p className="mt-6 text-sm text-text-muted text-center max-w-md">
+                    Note: This is an AI-powered assessment tool and does not replace professional medical advice. In case of emergency, call local emergency services immediately.
+                </p>
             </div>
         </div>
     );

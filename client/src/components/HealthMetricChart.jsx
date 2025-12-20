@@ -25,17 +25,17 @@ const HealthMetricChart = ({ data, metricType, className, height = 300 }) => {
         if (metricType === 'BLOOD_PRESSURE') {
             return (
                 <>
-                    <Line type="monotone" dataKey="systolic" stroke="#ef4444" name="Systolic (mmHg)" strokeWidth={2} />
-                    <Line type="monotone" dataKey="diastolic" stroke="#3b82f6" name="Diastolic (mmHg)" strokeWidth={2} />
+                    <Line type="monotone" dataKey="systolic" stroke="#2C7A7B" name="Systolic (mmHg)" strokeWidth={2} />
+                    <Line type="monotone" dataKey="diastolic" stroke="#4A7C59" name="Diastolic (mmHg)" strokeWidth={2} />
                 </>
             );
         } else {
-            let color = '#3b82f6';
+            let color = '#2C7A7B';
             let label = 'Value';
 
-            if (metricType === 'GLUCOSE') { color = '#10b981'; label = 'Glucose (mg/dL)'; }
-            if (metricType === 'WEIGHT') { color = '#f59e0b'; label = 'Weight (kg)'; }
-            if (metricType === 'HEART_RATE') { color = '#ef4444'; label = 'Heart Rate (bpm)'; }
+            if (metricType === 'GLUCOSE') { color = '#4A7C59'; label = 'Glucose (mg/dL)'; }
+            if (metricType === 'WEIGHT') { color = '#718096'; label = 'Weight (kg)'; }
+            if (metricType === 'HEART_RATE') { color = '#2C7A7B'; label = 'Heart Rate (bpm)'; }
 
             return <Line type="monotone" dataKey="realValue" stroke={color} name={label} strokeWidth={2} />;
         }

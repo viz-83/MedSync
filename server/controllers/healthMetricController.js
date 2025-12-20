@@ -20,6 +20,17 @@ const checkAbnormal = (type, value) => {
     }
 };
 
+const { encrypt, decrypt } = require('../utils/encryption');
+
+// Helper to safely parse if needed or return value
+const parseDecrypted = (val) => {
+    try {
+        return JSON.parse(val);
+    } catch (e) {
+        return val;
+    }
+}
+
 exports.logHealthMetric = catchAsync(async (req, res, next) => {
     const { metricType, value, note } = req.body;
 
@@ -34,20 +45,26 @@ exports.logHealthMetric = catchAsync(async (req, res, next) => {
         }
     }
 
+    // Encrypt sensitive data
+    const encryptedValue = encrypt(JSON.stringify(value));
+    const encryptedNote = note ? encrypt(note) : undefined;
+
     const metric = await HealthMetric.create({
         patient: req.user._id,
         metricType,
-        value,
-        note
+        value: encryptedValue,
+        note: encryptedNote
     });
 
-    const isAbnormal = checkAbnormal(metricType, value);
+    const isAbnormal = checkAbnormal(metricType, value); // Use original raw value for check
 
     res.status(201).json({
         status: 'success',
         data: {
             metric: {
                 ...metric.toObject(),
+                value: value, // Return raw input to user
+                note: note,   // Return raw input
                 isAbnormal
             }
         }
@@ -72,11 +89,17 @@ exports.getMyHealthMetrics = catchAsync(async (req, res, next) => {
 
     const metrics = await HealthMetric.find(filter).sort('recordedAt'); // Sort ASC for charts
 
-    // Add isAbnormal flag to each
-    const metricsWithFlags = metrics.map(m => ({
-        ...m.toObject(),
-        isAbnormal: checkAbnormal(m.metricType, m.value)
-    }));
+    // Decrypt and Add isAbnormal flag
+    const metricsWithFlags = metrics.map(m => {
+        const decryptedVal = parseDecrypted(decrypt(m.value));
+        const decryptedNote = m.note ? decrypt(m.note) : undefined;
+        return {
+            ...m.toObject(),
+            value: decryptedVal,
+            note: decryptedNote,
+            isAbnormal: checkAbnormal(m.metricType, decryptedVal)
+        };
+    });
 
     // Group by type if no specific type requested
     let responseData = metricsWithFlags;
@@ -102,10 +125,16 @@ exports.getPatientHealthMetrics = catchAsync(async (req, res, next) => {
 
     const metrics = await HealthMetric.find({ patient: patientId }).sort('recordedAt');
 
-    const metricsWithFlags = metrics.map(m => ({
-        ...m.toObject(),
-        isAbnormal: checkAbnormal(m.metricType, m.value)
-    }));
+    const metricsWithFlags = metrics.map(m => {
+        const decryptedVal = parseDecrypted(decrypt(m.value));
+        const decryptedNote = m.note ? decrypt(m.note) : undefined;
+        return {
+            ...m.toObject(),
+            value: decryptedVal,
+            note: decryptedNote,
+            isAbnormal: checkAbnormal(m.metricType, decryptedVal)
+        };
+    });
 
     const grouped = metricsWithFlags.reduce((acc, curr) => {
         if (!acc[curr.metricType]) acc[curr.metricType] = [];

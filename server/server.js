@@ -15,7 +15,44 @@ const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(express.json());
+app.use(express.json({ limit: '10kb' })); // Body limit
+
+// 1. Security Headers
+const helmet = require('helmet');
+app.use(helmet());
+
+// 2. Data Sanitization against NoSQL query injection
+const mongoSanitize = require('express-mongo-sanitize');
+app.use(mongoSanitize());
+
+// 3. Data Sanitization against XSS
+const xss = require('xss-clean');
+app.use(xss());
+
+// 4. Rate Limiting
+const rateLimit = require('express-rate-limit');
+
+// Value-Added: Rate Limiters
+const globalLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000,
+    max: 100, // 100 requests per 15 mins
+    message: 'Too many requests from this IP, please try again later.'
+});
+app.use('/api', globalLimiter);
+
+const authLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 10, // 10 login/signup attempts per 10 mins (Relaxed from 5 to avoid accidental blocks in testing)
+    message: { message: 'Too many auth attempts, please try again later.' }
+});
+app.use('/api/auth', authLimiter);
+
+const otpLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000,
+    max: 6, // 6 OTP attempts (enough for 1 retry and some errors)
+    message: { message: 'Too many OTP verifications, please try again later.' }
+});
+app.use('/api/auth/verify-otp', otpLimiter);
 
 app.get('/test-root', (req, res) => {
     console.log('Root test route hit!');
@@ -24,7 +61,8 @@ app.get('/test-root', (req, res) => {
 
 app.use(cors({
     origin: 'http://localhost:5173',
-    credentials: true
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS']
 }));
 app.use(cookieParser());
 
