@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import LandingNavbar from '../components/LandingNavbar';
-import doctorsHero from '../assets/doctors_hero.png';
+import doctorsHero from '../assets/doctors_hero.jpeg';
 import aboutImage from '../assets/find_doctors_card.png';
 import ServiceSection from '../components/ServiceSection';
 import ContactSection from '../components/ContactSection';

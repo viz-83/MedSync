@@ -3,11 +3,65 @@ const Doctor = require('../models/doctorModel');
 const sendEmail = require('../utils/email');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
+const crypto = require('crypto');
 const { StreamChat } = require('stream-chat');
+const RefreshToken = require('../models/RefreshToken');
 
 const streamClient = new StreamChat(process.env.STREAM_API_KEY, process.env.STREAM_API_SECRET);
 
 const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+const signToken = (id, role) => {
+    return jwt.sign({ id, role }, process.env.JWT_SECRET, {
+        expiresIn: '15m' // Short lived access token
+    });
+};
+
+const createSendToken = async (user, statusCode, res, isDoctorProfileComplete = false) => {
+    const token = signToken(user._id, user.role);
+
+    // Generate Refresh Token
+    const refreshToken = crypto.randomBytes(40).toString('hex');
+    const refreshTokenExpires = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
+
+    // Save Refresh Token to DB
+    await RefreshToken.create({
+        user: user._id,
+        token: refreshToken,
+        expiresAt: refreshTokenExpires
+    });
+
+    const cookieOptions = {
+        expires: new Date(Date.now() + 15 * 60 * 1000), // Match access token
+        httpOnly: true,
+        secure: false, // Set to true in prod
+        sameSite: 'lax'
+    };
+
+    const refreshCookieOptions = {
+        expires: refreshTokenExpires,
+        httpOnly: true,
+        secure: false, // Set to true in prod
+        sameSite: 'lax',
+        path: '/api/auth/refresh-token' // Restrict path
+    };
+
+    // Send Cookies
+    res.cookie('token', token, cookieOptions); // Access token in cookie (legacy/fallback)
+    res.cookie('refreshToken', refreshToken, refreshCookieOptions);
+
+    // Remove sensitive data from output
+    user.password = undefined;
+    user.otp = undefined;
+
+    res.status(statusCode).json({
+        status: 'success',
+        token,
+        user,
+        isDoctorProfileComplete,
+        data: { user } // keeping data.user just in case some other new code expects it, but flat is primary
+    });
+};
 
 exports.signup = async (req, res) => {
     try {
@@ -84,22 +138,13 @@ exports.verifyOTP = async (req, res) => {
         user.otpExpires = undefined;
         await user.save();
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
-
-        const cookieOptions = {
-            httpOnly: true,
-            secure: false, // Set to true in production
-            sameSite: 'lax'
-        };
-        console.log('Setting Cookie (VerifyOTP):', cookieOptions);
-
         let isDoctorProfileComplete = false;
         if (user.role === 'doctor') {
             const doctor = await Doctor.findOne({ user: user._id });
             if (doctor) isDoctorProfileComplete = true;
         }
 
-        res.cookie('token', token, cookieOptions).json({ message: 'Verification successful', token, user, isDoctorProfileComplete });
+        createSendToken(user, 200, res, isDoctorProfileComplete);
     } catch (error) {
         res.status(500).json({ message: error.message });
     }
@@ -116,7 +161,7 @@ exports.login = async (req, res) => {
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) return res.status(400).json({ message: 'Invalid credentials' });
 
-        // Sync user to Stream on login (to catch existing users)
+        // Sync user to Stream on login
         try {
             await streamClient.upsertUser({
                 id: user._id.toString(),
@@ -127,14 +172,44 @@ exports.login = async (req, res) => {
             console.error('Stream Sync Error (Login):', streamError);
         }
 
-        const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
+        let isDoctorProfileComplete = false;
+        if (user.role === 'doctor') {
+            const doctor = await Doctor.findOne({ user: user._id });
+            if (doctor) isDoctorProfileComplete = true;
+        }
 
-        const cookieOptions = {
-            httpOnly: true,
-            secure: false, // Set to true in production
-            sameSite: 'lax'
-        };
-        console.log('Setting Cookie (Login):', cookieOptions);
+        createSendToken(user, 200, res, isDoctorProfileComplete);
+    } catch (error) {
+        res.status(500).json({ message: error.message });
+    }
+};
+
+exports.refreshToken = async (req, res) => {
+    try {
+        const refreshToken = req.cookies.refreshToken;
+        if (!refreshToken) {
+            return res.status(401).json({ message: 'No refresh token provided' });
+        }
+
+        const tokenDoc = await RefreshToken.findOne({ token: refreshToken });
+        if (!tokenDoc || tokenDoc.isExpired || tokenDoc.revoked) {
+            // If token invalid/revoked, clear cookies and force logout
+            res.clearCookie('token');
+            res.clearCookie('refreshToken', { path: '/api/auth/refresh-token' });
+            return res.status(403).json({ message: 'Invalid or expired refresh token' });
+        }
+
+        // Get user
+        const user = await User.findById(tokenDoc.user);
+        if (!user) {
+            return res.status(401).json({ message: 'User belonging to token no longer exists' });
+        }
+
+        // Rotate Token (Revoke old, create new)
+        tokenDoc.revoked = Date.now();
+        tokenDoc.replacedByToken = 'new_generated_in_createSendToken'; // Placeholder, actual rotation happens in createSendToken logic? 
+        // Actually createSendToken creates a BRAND NEW record. We just mark old one as revoked.
+        await tokenDoc.save();
 
         let isDoctorProfileComplete = false;
         if (user.role === 'doctor') {
@@ -142,9 +217,12 @@ exports.login = async (req, res) => {
             if (doctor) isDoctorProfileComplete = true;
         }
 
-        res.cookie('token', token, cookieOptions).json({ message: 'Login successful', token, user, isDoctorProfileComplete });
+        // Issue new tokens
+        createSendToken(user, 200, res, isDoctorProfileComplete);
+
     } catch (error) {
-        res.status(500).json({ message: error.message });
+        console.error('Refresh Token Error:', error);
+        res.status(500).json({ message: 'Internal server error' });
     }
 };
 exports.getAllUsers = async (req, res) => {

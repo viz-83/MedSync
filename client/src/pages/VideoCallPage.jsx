@@ -6,13 +6,41 @@ import {
     StreamCall,
     SpeakerLayout,
     useCallStateHooks,
-    useCall
+    useCall,
+    ParticipantView
 } from '@stream-io/video-react-sdk';
 import '@stream-io/video-react-sdk/dist/css/styles.css';
 import { useStreamSession } from '../context/StreamSessionContext';
 import axios from 'axios';
 
 const apiKey = 'p6yehc4e2xgg'; // Replace with actual key or env var
+
+const CustomVideoLayout = () => {
+    const { useParticipants } = useCallStateHooks();
+    const participants = useParticipants();
+
+    return (
+        <div className="flex flex-wrap justify-center items-center h-full w-full p-4 gap-4 overflow-y-auto">
+            {participants.map((participant) => (
+                <div
+                    key={participant.sessionId}
+                    className="w-full md:w-1/2 lg:w-1/3 aspect-video relative bg-gray-900 rounded-lg overflow-hidden shadow-lg"
+                >
+                    <ParticipantView
+                        participant={participant}
+                        // CRITICAL FIX: Explicitly mute local participant audio to prevent echo
+                        muted={participant.isLocalParticipant}
+                    />
+                    <div className="absolute bottom-2 left-2 bg-black/50 text-white px-2 py-1 rounded text-sm backdrop-blur-sm flex flex-col items-start">
+                        <span className="font-bold">{participant.name || participant.userId} {participant.isLocalParticipant ? '(You)' : ''}</span>
+                        <span className="text-xs text-gray-300">ID: {participant.userId}</span>
+                        <span className="text-xs text-gray-300">Session: {participant.sessionId}</span>
+                    </div>
+                </div>
+            ))}
+        </div>
+    );
+};
 
 const CustomCallControls = ({ onLeave }) => {
     const call = useCall();
@@ -142,6 +170,7 @@ const VideoCallPage = () => {
     const [client, setClient] = useState(null);
     const [call, setCall] = useState(null);
     const clientRef = useRef(null);
+    const [permissionDenied, setPermissionDenied] = useState(false);
 
     useEffect(() => {
         let mounted = true;
@@ -193,11 +222,42 @@ const VideoCallPage = () => {
             };
 
             console.log('Initializing StreamVideoClient...');
-            const newClient = new StreamVideoClient({ apiKey, user, token: currentSession.videoToken });
+            const newClient = StreamVideoClient.getOrCreateInstance({
+                apiKey,
+                user,
+                token: currentSession.videoToken,
+            });
             clientRef.current = newClient;
 
             const newCall = newClient.call('default', currentSession.callId);
-            await newCall.join({ create: true });
+
+            try {
+                // Diagnostic: List available devices
+                const devices = await navigator.mediaDevices.enumerateDevices();
+                console.log('Available Devices:', devices.map(d => `${d.kind}: ${d.label}`));
+
+                // Explicitly requesting simple constraints to avoid high-res failures
+                await newCall.join({
+                    create: true,
+                    video: true,
+                    audio: true
+                });
+            } catch (error) {
+                console.error('Error joining call:', error);
+                const errorMessage = error?.message || error?.name || '';
+                if (
+                    errorMessage.includes('NotAllowedError') ||
+                    errorMessage.includes('Permission denied') ||
+                    errorMessage.includes('NotReadableError') ||
+                    errorMessage.includes('Could not start video source')
+                ) {
+                    if (mounted) setPermissionDenied(errorMessage); // Store the actual error message
+                    return; // Exit, logic below waits for permission fix
+                }
+                alert(`Failed to join call: ${errorMessage}`);
+                navigate('/dashboard');
+                return;
+            }
 
             if (mounted) {
                 setClient(newClient);
@@ -209,12 +269,29 @@ const VideoCallPage = () => {
 
         return () => {
             mounted = false;
+            // Safely cleanup call if it exists
+            if (call) {
+                const stopTracks = async () => {
+                    try {
+                        console.log('Stopping tracks...');
+                        if (call.camera) await call.camera.disable();
+                        if (call.microphone) await call.microphone.disable();
+                        await call.leave();
+                    } catch (err) {
+                        console.warn('Error during call cleanup:', err);
+                    }
+                };
+                stopTracks();
+            }
+
+            // NOTE: We do NOT disconnectUser() here. 
+            // In React Strict Mode, unmount/remount happens instantly.
+            // Disconnecting the user kills the singleton session, causing "User not found" on remount.
+            // Stream SDK handles connection reuse via getOrCreateInstance.
             if (clientRef.current) {
-                console.log('Disconnecting StreamVideoClient...');
-                clientRef.current.disconnectUser();
-                clientRef.current = null;
                 setClient(null);
                 setCall(null);
+                clientRef.current = null;
             }
         };
     }, [appointmentId, sessionData, setSession, navigate]);
@@ -226,6 +303,95 @@ const VideoCallPage = () => {
         navigate('/dashboard');
     };
 
+    if (permissionDenied) {
+        return (
+            <div className="h-screen w-screen bg-gray-900 flex flex-col justify-center items-center text-white p-6 text-center">
+                <div className="bg-gray-800 p-8 rounded-2xl shadow-2xl max-w-2xl border border-red-500 overflow-y-auto max-h-[90vh]">
+                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-16 h-16 text-red-500 mx-auto mb-4">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v3.75m-9.303 3.376c-.866 1.5.217 3.374 1.948 3.374h14.71c1.73 0 2.813-1.874 1.948-3.374L13.949 3.378c-.866-1.5-3.032-1.5-3.898 0L2.697 16.126ZM12 15.75h.007v.008H12v-.008Z" />
+                    </svg>
+                    <h2 className="text-2xl font-bold mb-4">Permissions Issue Detect</h2>
+                    <p className="mb-4 text-gray-300">
+                        We could not access your camera or microphone. This is usually due to <strong>System Privacy Settings</strong> or <strong>Another App</strong> using the device.
+                    </p>
+
+                    <div className="bg-gray-700 p-4 rounded-lg text-left mb-6 text-sm">
+                        <h3 className="font-bold text-lg mb-2 text-blue-400">🔧 Troubleshooting Guide</h3>
+                        <p className="mb-2 text-yellow-300 font-semibold">
+                            Based on the error, we detected:
+                            {permissionDenied.includes('NotReadableError') ? (
+                                <span className="text-white bg-red-600 px-2 py-1 rounded ml-2">Camera in Use / Hardware Error</span>
+                            ) : permissionDenied.includes('Permission denied by system') ? (
+                                <span className="text-white bg-red-600 px-2 py-1 rounded ml-2">OS System Block</span>
+                            ) : (
+                                <span className="text-white bg-red-600 px-2 py-1 rounded ml-2">Permission Denied</span>
+                            )}
+                        </p>
+
+                        <ol className="list-decimal pl-5 space-y-2 mt-4">
+                            {permissionDenied.includes('NotReadableError') && (
+                                <>
+                                    <li><strong>Another App is Using Camera:</strong> Check if Zoom, Teams, Discord, or another browser tab is open and using the camera. <strong>Close them completely.</strong></li>
+                                    <li><strong>Hardware Glitch:</strong> Unplug and re-plug your webcam (if external), or restart your laptop.</li>
+                                </>
+                            )}
+
+                            {(permissionDenied.includes('Permission denied by system') || permissionDenied.includes('NotAllowedError')) && (
+                                <>
+                                    <li>
+                                        <strong>Check Windows Settings:</strong> Go to <em>Start &gt; Settings &gt; Privacy &amp; security &gt; Camera</em>.
+                                        <br />Ensure <strong>"Let desktop apps access your camera"</strong> is ON.
+                                    </li>
+                                    <li>
+                                        <strong>Check Mac Settings:</strong> System Preferences &gt; Security & Privacy &gt; Camera. Ensure your browser is checked.
+                                    </li>
+                                </>
+                            )}
+
+                            <li>
+                                <strong>Browser Lock:</strong> Click the <strong>Lock icon 🔒</strong> in your address bar &gt; Reset Permissions.
+                            </li>
+                        </ol>
+                    </div>
+
+                    <div className="bg-gray-700 p-4 rounded-lg text-left mb-6 text-sm">
+                        <h3 className="font-bold text-lg mb-2 text-green-400">🧪 Diagnostic Test</h3>
+                        <p className="mb-2">Click below to test if your browser can access the camera directly (ignoring the app).</p>
+                        <button
+                            onClick={async () => {
+                                try {
+                                    const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+                                    alert("✅ SUCCESS: Browser can access camera/mic! The issue is likely with the app connection. Please refresh.");
+                                    stream.getTracks().forEach(t => t.stop());
+                                } catch (err) {
+                                    alert(`❌ FAILURE: Browser CANNOT access device. \nError: ${err.name} - ${err.message}\n\nPlease check Windows Privacy Settings or Driver drivers.`);
+                                }
+                            }}
+                            className="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold w-full transition-colors"
+                        >
+                            Run Native Camera Test
+                        </button>
+                    </div>
+
+                    <div className="flex gap-4 justify-center">
+                        <button
+                            onClick={() => window.location.reload()}
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-full font-semibold transition-colors"
+                        >
+                            Refresh Page
+                        </button>
+                        <button
+                            onClick={() => navigate('/dashboard')}
+                            className="bg-gray-600 hover:bg-gray-700 text-white px-6 py-2 rounded-full font-semibold transition-colors"
+                        >
+                            Go Back
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     if (!client || !call) return <div className="text-center mt-20 text-white">Joining call...</div>;
 
     return (
@@ -233,7 +399,7 @@ const VideoCallPage = () => {
             <StreamVideo client={client}>
                 <StreamCall call={call}>
                     <div className="flex-1 relative overflow-hidden">
-                        <SpeakerLayout />
+                        <CustomVideoLayout />
                         {/* Waiting Room Overlay */}
                         {sessionData?.appointmentStatus === 'IN_WAITING_ROOM' && (
                             <div className="absolute top-4 left-1/2 transform -translate-x-1/2 bg-yellow-100 text-yellow-800 px-4 py-2 rounded-full shadow-lg z-10">

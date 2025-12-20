@@ -1,9 +1,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
-import doctorsHero from '../assets/doctors_hero.png';
+import doctorsHero from '../assets/doctors_hero.jpeg';
 import findDoctorsCard from '../assets/find_doctors_card.png';
 import myAppointmentsCard from '../assets/my_appointments_card.png';
+import labReportCard from '../assets/lab_report_card.png';
+import symptomCheckerCard from '../assets/symptom_checker_card.png';
+import ambulanceCard from '../assets/ambulance_card.png';
 import AboutSection from '../components/AboutSection';
 import ServiceSection from '../components/ServiceSection';
 import ContactSection from '../components/ContactSection';
@@ -31,19 +34,19 @@ const Dashboard = () => {
             {
                 title: "Lab Reports",
                 description: "Upload and view your medical reports and test results.",
-                image: "https://cdn-icons-png.flaticon.com/512/2966/2966486.png", // Using a placeholder URL for now or reuse existing asset if appropriate
+                image: labReportCard,
                 action: () => navigate('/patient/reports/upload')
             },
             {
                 title: "Symptom Checker",
                 description: "Not sure which specialist to see? Analyze your symptoms instantly.",
-                image: "https://cdn-icons-png.flaticon.com/512/3063/3063176.png",
+                image: symptomCheckerCard,
                 action: () => navigate('/symptom-checker')
             },
             {
                 title: "Book Ambulance",
                 description: "Emergency? Request an ambulance to your location immediately.",
-                image: "https://cdn-icons-png.flaticon.com/512/2892/2892962.png",
+                image: ambulanceCard,
                 action: () => navigate('/ambulance/book')
             },
             {
