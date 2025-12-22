@@ -10,6 +10,7 @@ import { FaLaptopMedical, FaUserMd, FaNotesMedical, FaHeartbeat, FaCalendarAlt, 
 import { Pill } from 'lucide-react';
 import DiseaseMarquee from '../components/DiseaseMarquee';
 import TestCarousel from '../components/TestCarousel';
+import GetCareToday from '../components/GetCareToday';
 
 const Dashboard = () => {
     const navigate = useNavigate();
@@ -138,9 +139,6 @@ const Dashboard = () => {
                 </div>
             </section>
 
-            {/* TEST CAROUSEL */}
-            <TestCarousel />
-
             {/* 3. THINGS WE OFFER (Services Grid) */}
             <section className="py-24 bg-white relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-secondary/10 via-transparent to-transparent pointer-events-none"></div>
@@ -167,6 +165,12 @@ const Dashboard = () => {
 
             {/* BENTO GRID */}
             <BentoGrid />
+
+            {/* GET CARE TODAY */}
+            <GetCareToday />
+
+            {/* TEST CAROUSEL */}
+            <TestCarousel />
 
             {/* DISEASE MARQUEE */}
             <DiseaseMarquee />

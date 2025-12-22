@@ -55,6 +55,7 @@ import Layout from './components/Layout';
 // ... imports ...
 
 import { Toaster } from 'react-hot-toast';
+import AIAssistantButton from './components/AIAssistant/AIAssistantButton';
 
 const App = () => {
   return (
@@ -66,17 +67,17 @@ const App = () => {
           <MedicineCartProvider>
             <Routes>
               {/* Unified Home Route */}
-              <Route path="/" element={<Home />} />
+              <Route path="/" element={<Landing />} />
 
               <Route path="/signup" element={<Signup />} />
               <Route path="/verify-otp" element={<VerifyOTP />} />
               <Route path="/login" element={<Login />} />
 
-              {/* /dashboard is now handled by / (Home) if logged in. 
-              Keeping /dashboard as a redirect or alias is optional, 
-              but usually cleaner to remove or redirect if used by bookmarks.
-              For now, we remove it and rely on Home. 
-          */}
+              <Route path="/dashboard" element={
+                <ProtectedRoute>
+                  <Dashboard />
+                </ProtectedRoute>
+              } />
 
               <Route path="/doctor/onboarding" element={
                 <ProtectedRoute>
@@ -143,7 +144,11 @@ const App = () => {
                   <ViewReportsDoctor />
                 </ProtectedRoute>
               } />
-              <Route path="/symptom-checker" element={<SymptomChecker />} />
+              <Route path="/symptom-checker" element={
+                <ProtectedRoute>
+                  <SymptomChecker />
+                </ProtectedRoute>
+              } />
               <Route path="/ambulance/book" element={
                 <ProtectedRoute>
                   <AmbulanceBooking />
@@ -174,6 +179,7 @@ const App = () => {
           </MedicineCartProvider>
         </TestCartProvider>
       </StreamSessionProvider>
+      <AIAssistantButton />
     </Router>
   );
 };
