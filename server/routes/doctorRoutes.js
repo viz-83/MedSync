@@ -8,6 +8,7 @@ router.post('/me/profile', authController.protect, doctorController.createOrUpda
 router.get('/me', authController.protect, doctorController.getDoctorProfile);
 
 router.get('/nearby', doctorController.getNearbyDoctors);
+router.get('/cities', doctorController.getDoctorCities);
 router.get('/:id/availability', doctorController.getDoctorAvailability);
 router.post('/me/availability', authController.protect, doctorController.updateAvailability);
 

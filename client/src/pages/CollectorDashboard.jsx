@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import axiosInstance from '../utils/axiosInstance';
 import { ClipboardList, MapPin, Phone, CheckCircle, Clock } from 'lucide-react';
 
@@ -36,7 +37,7 @@ const CollectorDashboard = () => {
                 setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: 'SAMPLE_COLLECTED' } : o));
             }
         } catch (error) {
-            alert('Failed to update status');
+            toast.error('Failed to update status');
         }
     };
 
@@ -110,7 +111,7 @@ const CollectorDashboard = () => {
                                                     Mark Collected
                                                 </button>
                                             ) : (
-                                                <button disabled className="inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 shadow-sm text-sm font-medium rounded-md text-gray-400 bg-gray-100 dark:bg-gray-800 cursor-not-allowed">
+                                                <button disabled className="inline-flex items-center px-4 py-2 border border-gray-50 dark:border-white/10 shadow-sm text-sm font-medium rounded-md text-gray-400 bg-gray-100 dark:bg-gray-800 cursor-not-allowed">
                                                     <CheckCircle className="h-4 w-4 mr-2" />
                                                     Completed
                                                 </button>

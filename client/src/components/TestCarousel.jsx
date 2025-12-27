@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import { ChevronLeft, ChevronRight, ArrowRight } from 'lucide-react';
+import Skeleton from './ui/Skeleton';
 
 const TestCarousel = () => {
     const [tests, setTests] = useState([]);
@@ -39,7 +40,36 @@ const TestCarousel = () => {
         }
     };
 
-    if (loading) return null;
+    if (loading) {
+        return (
+            <section className="py-20 bg-background-subtle">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div className="flex flex-col md:flex-row justify-between items-end mb-12 gap-6">
+                        <div className="space-y-4">
+                            <Skeleton className="h-10 w-64 md:w-96" />
+                            <Skeleton className="h-6 w-full max-w-xl" />
+                        </div>
+                        <div className="flex gap-3">
+                            <Skeleton className="h-12 w-12 rounded-full" />
+                            <Skeleton className="h-12 w-12 rounded-full" />
+                        </div>
+                    </div>
+                    <div className="flex gap-6 overflow-hidden">
+                        {[1, 2, 3, 4].map(i => (
+                            <div key={i} className="flex-shrink-0 w-72 bg-surface rounded-3xl p-6 h-[400px] border border-gray-100 dark:border-gray-700">
+                                <Skeleton className="h-40 w-full mb-6 rounded-xl" />
+                                <div className="space-y-4">
+                                    <Skeleton className="h-6 w-3/4" />
+                                    <Skeleton className="h-4 w-full" />
+                                    <Skeleton className="h-4 w-2/3" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+        );
+    }
     if (tests.length === 0) return null;
 
     return (
@@ -84,7 +114,7 @@ const TestCarousel = () => {
                     {tests.map((test) => (
                         <div
                             key={test._id}
-                            className="flex-shrink-0 w-72 bg-surface rounded-3xl shadow-sm hover:shadow-xl transition-all duration-300 transform hover:-translate-y-1 snap-start border border-transparent hover:border-teal-100 flex flex-col justify-between h-[400px] overflow-hidden"
+                            className="flex-shrink-0 w-72 bg-surface rounded-3xl shadow-sm hover:shadow-md transition-all duration-200 ease-out transform hover:-translate-y-0.5 snap-start border border-gray-50 dark:border-white/5 hover:border-teal-100 dark:hover:border-teal-900/50 flex flex-col justify-between h-[400px] overflow-hidden"
                         >
                             {/* Image Section */}
                             <div className="h-40 w-full overflow-hidden relative">

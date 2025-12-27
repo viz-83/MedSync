@@ -148,13 +148,13 @@ const UploadLabReport = () => {
                                 <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cta"></div>
                             </div>
                         ) : reports.length === 0 ? (
-                            <Card className="p-12 text-center bg-gray-50 border-gray-100 shadow-none">
+                            <Card className="p-12 text-center bg-gray-50 border-gray-50 shadow-none">
                                 <p className="text-text-secondary">No reports uploaded yet.</p>
                             </Card>
                         ) : (
                             <div className="grid gap-4">
                                 {reports.map((report) => (
-                                    <Card key={report._id} className="hover:shadow-md transition-all border-gray-100">
+                                    <Card key={report._id} className="hover:shadow-md transition-all border-gray-50">
                                         <div className="p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                                             <div className="flex items-center gap-4">
                                                 <div className="p-3 bg-secondary/20 rounded-xl text-text-secondary">

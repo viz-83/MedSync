@@ -124,11 +124,11 @@ const CreatePrescription = () => {
                         <form onSubmit={handleSubmit} className="space-y-8">
                             {/* Diagnosis Section */}
                             <div className="space-y-4">
-                                <h2 className="text-xl font-heading font-bold text-text-primary border-b border-gray-100 dark:border-gray-700 pb-2">1. Diagnosis</h2>
+                                <h2 className="text-xl font-heading font-bold text-text-primary border-b border-gray-50 dark:border-white/5 pb-2">1. Diagnosis</h2>
                                 <textarea
                                     value={diagnosis}
                                     onChange={(e) => setDiagnosis(e.target.value)}
-                                    className="w-full px-4 py-3 rounded-xl border border-gray-200 dark:border-gray-700 focus:border-cta focus:ring-2 focus:ring-cta/10 bg-gray-50/50 dark:bg-background-subtle transition-all outline-none min-h-[100px] text-text-primary"
+                                    className="w-full px-4 py-3 rounded-xl border border-gray-50 dark:border-white/10 focus:border-cta focus:ring-2 focus:ring-cta/10 bg-gray-50/50 dark:bg-background-subtle transition-all outline-none min-h-[100px] text-text-primary"
                                     placeholder="Enter clinical diagnosis details..."
                                     required
                                 />
@@ -136,7 +136,7 @@ const CreatePrescription = () => {
 
                             {/* Medicines Section */}
                             <div className="space-y-4">
-                                <h2 className="text-xl font-heading font-bold text-text-primary border-b border-gray-100 pb-2 flex justify-between items-center">
+                                <h2 className="text-xl font-heading font-bold text-text-primary border-b border-gray-50 dark:border-white/5 pb-2 flex justify-between items-center">
                                     <span>2. Medications</span>
                                     <Badge variant="primary">{medicines.length} Added</Badge>
                                 </h2>

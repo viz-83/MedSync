@@ -76,7 +76,7 @@ const Tests = () => {
                             </div>
                             <input
                                 type="text"
-                                className="block w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 text-text-primary focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
+                                className="block w-full pl-10 pr-3 py-2 border border-gray-50 dark:border-white/10 rounded-md leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 text-text-primary focus:outline-none focus:ring-teal-500 focus:border-teal-500 sm:text-sm"
                                 placeholder="Search for tests (e.g. Thyroid, CBC)..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
@@ -95,7 +95,7 @@ const Tests = () => {
                                         onMouseLeave={() => setHoveredCategory(null)}
                                         className={`whitespace-nowrap px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 border ${isActive
                                             ? 'bg-teal-600 text-white border-teal-600'
-                                            : 'text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-700'
+                                            : 'text-gray-600 dark:text-gray-300 border-gray-50 dark:border-white/10'
                                             }`}
                                         style={{
                                             backgroundColor: isActive

@@ -104,14 +104,14 @@ const MedicineOrderDetails = () => {
                 {/* Items & Address Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     {/* Medicines List */}
-                    <div className="bg-white dark:bg-surface rounded-2xl p-6 shadow-sm border border-gray-100 dark:border-gray-700">
+                    <div className="bg-white dark:bg-surface rounded-2xl p-6 shadow-sm border border-gray-50 dark:border-white/5">
                         <h2 className="font-bold text-text-primary mb-4 flex items-center gap-2">
                             <Package className="h-5 w-5 text-gray-500" />
                             Items Ordered
                         </h2>
                         <div className="space-y-4">
                             {order.medicines.map((item) => (
-                                <div key={item._id} className="flex justify-between items-center py-2 border-b border-gray-50 dark:border-gray-800 last:border-0">
+                                <div key={item._id} className="flex justify-between items-center py-2 border-b border-gray-50 dark:border-white/5 last:border-0">
                                     <div>
                                         <p className="font-medium text-text-primary">{item.name}</p>
                                         <p className="text-sm text-text-secondary">Qty: {item.quantity}</p>
@@ -119,7 +119,7 @@ const MedicineOrderDetails = () => {
                                     <p className="font-bold text-text-primary">₹{item.priceAtPurchase * item.quantity}</p>
                                 </div>
                             ))}
-                            <div className="flex justify-between pt-4 border-t border-gray-100 dark:border-gray-700 text-lg font-bold text-text-primary">
+                            <div className="flex justify-between pt-4 border-t border-gray-50 dark:border-white/5 text-lg font-bold text-text-primary">
                                 <span>Total Paid</span>
                                 <span>₹{order.totalAmount}</span>
                             </div>

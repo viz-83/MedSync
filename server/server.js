@@ -104,6 +104,7 @@ app.use('/api/v1/tests', require('./routes/diagnosticTestRoutes')); // Diagnosti
 app.use('/api/v1/test-orders', require('./routes/diagnosticOrderRoutes')); // Test orders
 app.use('/api/v1/medicines', require('./routes/medicineRoutes')); // Medicine catalog
 app.use('/api/v1/medicine-orders', require('./routes/medicineOrderRoutes')); // Medicine orders
+app.use('/api/v1/payments', require('./routes/paymentRoutes')); // Payment Gateway
 app.use('/api/v1/assistant', require('./routes/aiAssistantRoutes')); // AI Assistant
 // app.use('/prescriptions', express.static('prescriptions'));
 

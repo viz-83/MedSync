@@ -75,11 +75,11 @@ const AmbulanceBooking = () => {
                     <div className="p-8">
                         {!booking ? (
                             <>
-                                <div className="mb-8 bg-red-50 dark:bg-red-900/10 border-l-4 border-red-500 p-4 rounded-r-xl">
+                                <div className="mb-8 bg-red-300 dark:bg-red-900/40 border-l-4 border-red-700 p-4 rounded-r-xl">
                                     <div className="flex items-start gap-3">
-                                        <FaExclamationTriangle className="text-red-600 mt-1 flex-shrink-0" />
-                                        <p className="text-red-800 dark:text-red-200 text-sm font-medium leading-relaxed">
-                                            For immediate life-threatening emergencies, consider calling your local emergency number (e.g., 911) directly.
+                                        <FaExclamationTriangle className="text-red-800 mt-1 flex-shrink-0" />
+                                        <p className="text-black dark:text-white text-sm font-bold leading-relaxed">
+                                            For immediate life-threatening emergencies, consider calling your local emergency number (e.g., 102/108) directly.
                                         </p>
                                     </div>
                                 </div>

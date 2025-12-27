@@ -3,6 +3,7 @@ import axiosInstance from '../utils/axiosInstance';
 import { useMedicineCart } from '../context/MedicineCartContext';
 import { Search, Filter, ShoppingCart, Plus, Info } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import Skeleton from '../components/ui/Skeleton';
 
 const Medicines = () => {
     const [medicines, setMedicines] = useState([]);
@@ -108,11 +109,25 @@ const Medicines = () => {
 
                 {/* Medicine Grid */}
                 {loading ? (
-                    <div className="text-center py-20 text-gray-500">Loading medicines...</div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                            <div key={i} className="bg-white dark:bg-surface rounded-2xl p-4 shadow-sm border border-gray-100 dark:border-white/5 flex flex-col h-full">
+                                <Skeleton className="h-40 w-full rounded-xl mb-4" />
+                                <div className="space-y-2 mb-4">
+                                    <Skeleton className="h-6 w-3/4" />
+                                    <Skeleton className="h-4 w-1/2" />
+                                </div>
+                                <div className="flex justify-between items-center mt-auto">
+                                    <Skeleton className="h-6 w-20" />
+                                    <Skeleton className="h-9 w-24 rounded-lg" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                         {medicines.map((med) => (
-                            <div key={med._id} className="bg-white dark:bg-surface rounded-2xl p-4 shadow-sm hover:shadow-md transition border border-gray-100 dark:border-white/5 flex flex-col h-full">
+                            <div key={med._id} className="bg-white dark:bg-surface rounded-2xl p-4 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-200 ease-out border border-gray-100 dark:border-white/5 flex flex-col h-full">
                                 <div className="h-40 bg-white rounded-xl mb-4 overflow-hidden relative border border-gray-100 dark:border-white/5">
                                     <img
                                         src={med.image}

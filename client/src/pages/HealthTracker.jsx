@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import toast from 'react-hot-toast';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
+import { Activity, Droplet, Heart, Scale, TrendingUp } from 'lucide-react';
 import HealthMetricChart from '../components/HealthMetricChart';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
@@ -21,10 +23,10 @@ const HealthTracker = () => {
     const [submitting, setSubmitting] = useState(false);
 
     const tabs = [
-        { id: 'GLUCOSE', label: 'Glucose', unit: 'mg/dL', icon: '🩸' },
-        { id: 'BLOOD_PRESSURE', label: 'Blood Pressure', unit: 'mmHg', icon: '❤️' },
-        { id: 'HEART_RATE', label: 'Heart Rate', unit: 'bpm', icon: '💓' },
-        { id: 'WEIGHT', label: 'Weight', unit: 'kg', icon: '⚖️' }
+        { id: 'GLUCOSE', label: 'Glucose', unit: 'mg/dL', icon: <Droplet className="w-6 h-6" /> },
+        { id: 'BLOOD_PRESSURE', label: 'Blood Pressure', unit: 'mmHg', icon: <Heart className="w-6 h-6" /> },
+        { id: 'HEART_RATE', label: 'Heart Rate', unit: 'bpm', icon: <Activity className="w-6 h-6" /> },
+        { id: 'WEIGHT', label: 'Weight', unit: 'kg', icon: <Scale className="w-6 h-6" /> }
     ];
 
     const fetchMetrics = async () => {
@@ -77,7 +79,7 @@ const HealthTracker = () => {
             fetchMetrics();
         } catch (error) {
             console.error('Error logging metric:', error);
-            alert('Failed to save reading. Please check your inputs.');
+            toast.error('Failed to save reading. Please check your inputs.');
         } finally {
             setSubmitting(false);
         }
@@ -118,7 +120,7 @@ const HealthTracker = () => {
                                                 : (isHovered ? 'var(--bg-subtle)' : 'var(--bg-surface)')
                                         }}
                                     >
-                                        <span className="text-2xl mr-2">{tab.icon}</span>
+                                        <div className="mr-3">{tab.icon}</div>
                                         <span className={`font-semibold ${isActive ? 'text-white' : 'text-text-primary'}`}>
                                             {tab.label}
                                         </span>
@@ -189,8 +191,8 @@ const HealthTracker = () => {
                                     <HealthMetricChart data={metrics} metricType={activeTab} />
                                 </div>
                             ) : (
-                                <div className="h-64 flex flex-col items-center justify-center bg-gray-50 rounded-xl border border-dashed border-gray-200 text-text-muted">
-                                    <div className="text-4xl mb-3">📈</div>
+                                <div className="h-64 flex flex-col items-center justify-center bg-gray-50 dark:bg-white/5 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 text-text-muted">
+                                    <TrendingUp className="w-12 h-12 mb-3 text-gray-300 dark:text-gray-600" />
                                     <p>No data available yet.</p>
                                     <p className="text-sm mt-1">Add your first {activeLabel.toLowerCase()} reading!</p>
                                 </div>

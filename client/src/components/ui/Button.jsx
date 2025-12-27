@@ -8,10 +8,10 @@ const Button = ({
     disabled = false,
     ...props
 }) => {
-    const baseStyles = "inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed";
+    const baseStyles = "inline-flex items-center justify-center font-semibold transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto";
 
     const variants = {
-        primary: "bg-cta text-white hover:bg-cta-hover focus:ring-cta text-white shadow-lg shadow-cta/30",
+        primary: "bg-cta text-white hover:bg-cta-hover focus:ring-cta text-white shadow-lg shadow-cta/30 hover:shadow-xl hover:-translate-y-px active:translate-y-0 transition-all duration-200 ease-out",
         secondary: "bg-transparent border-2 border-cta text-cta hover:bg-cta/5 focus:ring-cta",
         tertiary: "bg-transparent text-cta hover:text-cta-hover hover:underline focus:ring-cta",
         danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500",

@@ -40,7 +40,7 @@ const GetCareToday = () => {
     }, []);
 
     return (
-        <section className="py-24 bg-white flex flex-col items-center justify-center text-center px-4 overflow-hidden">
+        <section className="py-24 bg-white dark:bg-surface flex flex-col items-center justify-center text-center px-4 overflow-hidden">
             <h2 className="text-5xl md:text-7xl font-heading font-bold leading-tight mb-4">
                 <span className="text-cta block mb-2">Get care today for</span>
                 {/* Fixed height container to prevent layout shifts */}

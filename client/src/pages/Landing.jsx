@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
@@ -15,6 +15,13 @@ import GetCareToday from '../components/GetCareToday';
 const Landing = () => {
     const navigate = useNavigate();
     const firstName = 'There'; // Generic greeting for guests
+
+    useEffect(() => {
+        const token = localStorage.getItem('token');
+        if (token) {
+            navigate('/dashboard');
+        }
+    }, [navigate]);
 
     // Redirect logic
     const handleNavigation = (path) => {
@@ -71,7 +78,8 @@ const Landing = () => {
             <Navbar />
 
             {/* 1. HERO SECTION - Editorial Style (Personalized) */}
-            <section className="pt-32 pb-16 lg:pt-40 lg:pb-24 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-24">
+            {/* 1. HERO SECTION - Editorial Style (Personalized) */}
+            <section className="pt-20 pb-10 sm:pb-14 lg:pt-28 lg:pb-20 xl:pb-24 px-4 sm:px-6 lg:px-12 xl:px-20 max-w-7xl mx-auto flex flex-col lg:flex-row items-center gap-12 lg:gap-24 overflow-hidden">
                 <div className="lg:w-1/2 flex flex-col items-center lg:items-start text-center lg:text-left z-10">
                     <span className="inline-block px-4 py-1.5 bg-secondary/30 text-cta font-bold text-xs tracking-wider uppercase rounded-full mb-6">
                         Welcome to MedSync
@@ -107,7 +115,7 @@ const Landing = () => {
                     <img
                         src={doctorsHero}
                         alt="MedSync Doctor"
-                        className="w-full h-[500px] object-cover rounded-[2.5rem] shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-700 ease-out border-4 border-white dark:border-gray-800"
+                        className="w-full h-[500px] object-cover rounded-[2.5rem] shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-700 ease-out"
                     />
 
                     {/* Floating Badge */}
@@ -126,8 +134,9 @@ const Landing = () => {
             </section>
 
             {/* 2. TRUST MARQUEE */}
-            <section className="py-10 border-y border-gray-200/60 dark:border-gray-800/60 bg-white/50 dark:bg-white/5">
-                <div className="max-w-7xl mx-auto px-4 overflow-hidden">
+            {/* 2. TRUST MARQUEE */}
+            <section className="py-10 sm:py-14 border-y border-gray-100 dark:border-white/5 bg-white/50 dark:bg-white/5">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 overflow-hidden">
                     <p className="text-center text-sm font-bold text-text-muted mb-6 uppercase tracking-widest">Connect with top healthcare providers via</p>
                     <div className="flex justify-center flex-wrap gap-8 md:gap-16 opacity-50 grayscale hover:grayscale-0 transition-all duration-500">
                         <span className="text-xl font-heading font-bold">HealthPlus</span>
@@ -140,10 +149,10 @@ const Landing = () => {
             </section>
 
             {/* 3. THINGS WE OFFER (Services Grid) */}
-            <section className="py-24 bg-surface relative overflow-hidden">
+            <section className="py-10 sm:py-14 lg:py-20 xl:py-24 bg-[#D1E8E2]/60 dark:bg-white/5 relative overflow-hidden">
                 <div className="absolute top-0 left-0 w-full h-full bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-secondary/10 via-transparent to-transparent pointer-events-none"></div>
 
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 xl:px-20 relative">
                     <div className="text-center mb-16 max-w-3xl mx-auto">
                         <h2 className="text-3xl md:text-5xl font-heading font-bold text-text-primary mb-6">
                             Your Care Dashboard
@@ -176,8 +185,8 @@ const Landing = () => {
             <DiseaseMarquee />
 
             {/* 4. MISSION / ABOUT - Split Section */}
-            <section className="py-24 bg-background-subtle">
-                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <section className="py-10 sm:py-14 lg:py-20 xl:py-24 bg-background-subtle overflow-hidden">
+                <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-12 xl:px-20">
                     <div className="flex flex-col lg:flex-row items-center gap-16">
                         <div className="lg:w-1/2">
                             <div className="relative">
@@ -215,7 +224,7 @@ const Landing = () => {
                                         <p className="text-text-secondary">If you have a medical emergency, please call emergency services or book an ambulance immediately.</p>
                                     </div>
                                 </div>
-                                <Button variant="outline" onClick={() => handleNavigation('/ambulance/book')} className="mt-4">
+                                <Button variant="danger" onClick={() => handleNavigation('/ambulance/book')} className="mt-4 w-full sm:w-auto shadow-md hover:shadow-lg">
                                     Book Ambulance
                                 </Button>
                             </div>

@@ -49,8 +49,8 @@ const TestOrderDetails = () => {
                     </Link>
                 </div>
 
-                <div className="bg-white dark:bg-surface rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden mb-8">
-                    <div className="px-6 py-6 border-b border-gray-200 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-800/40">
+                <div className="bg-white dark:bg-surface rounded-lg shadow-sm border border-gray-50 dark:border-white/5 overflow-hidden mb-8">
+                    <div className="px-6 py-6 border-b border-gray-50 dark:border-white/5 flex justify-between items-center bg-gray-50 dark:bg-gray-800/40">
                         <div>
                             <h1 className="text-2xl font-bold text-text-primary">Order #{order._id.slice(-6).toUpperCase()}</h1>
                             <p className="text-sm text-text-secondary mt-1">

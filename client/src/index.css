@@ -58,6 +58,30 @@
     font-family: var(--font-body);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    width: 100%;
+  }
+
+  /* Custom Text Selection */
+  ::selection {
+    background-color: var(--col-secondary);
+    color: var(--col-cta-hover);
+  }
+
+  h1 {
+    @apply text-3xl sm:text-4xl lg:text-5xl;
+  }
+
+  h2 {
+    @apply text-2xl sm:text-3xl lg:text-4xl;
+  }
+
+  h3 {
+    @apply text-xl sm:text-2xl lg:text-3xl;
+  }
+
+  h4 {
+    @apply text-lg sm:text-xl lg:text-2xl;
   }
 
   h1,
@@ -68,6 +92,27 @@
   h6 {
     color: var(--color-text-primary);
     font-family: var(--font-heading);
+    @apply font-bold;
+  }
+
+  p {
+    @apply text-base sm:text-lg;
+    color: var(--color-text-secondary);
+  }
+
+  /* Global Scrollbar Hide */
+  * {
+    -ms-overflow-style: none !important;
+    /* IE and Edge */
+    scrollbar-width: none !important;
+    /* Firefox */
+  }
+
+  /* Chrome, Safari, Opera */
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
   }
 }
 

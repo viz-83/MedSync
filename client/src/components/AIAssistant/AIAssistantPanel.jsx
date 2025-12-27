@@ -98,7 +98,7 @@ const AIAssistantPanel = ({ isOpen, onClose }) => {
                             <Sparkles size={16} fill="currentColor" />
                         </div>
                         <div>
-                            <h3 className="font-heading font-bold" style={{ color: 'var(--txt-primary)' }}>Care Assistant</h3>
+                            <h3 className="font-heading font-bold text-base" style={{ color: 'var(--txt-primary)' }}>Care Assistant</h3>
                             <p className="text-[10px] text-gray-500 dark:text-text-secondary uppercase tracking-wider font-semibold">AI-Powered · Not a Diagnosis</p>
                         </div>
                     </div>
@@ -136,7 +136,7 @@ const AIAssistantPanel = ({ isOpen, onClose }) => {
                             onChange={(e) => setInputValue(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder="Ask about symptoms, doctors..."
-                            className="w-full bg-transparent border-none focus:ring-0 text-sm p-3 max-h-32 resize-none placeholder:text-gray-500 dark:placeholder:text-gray-400"
+                            className="w-full bg-transparent border-none focus:ring-0 text-xs p-3 max-h-32 resize-none placeholder:text-gray-500 dark:placeholder:text-gray-400"
                             style={{ color: 'var(--txt-primary)' }}
                             disabled={isLoading}
                             rows={1}

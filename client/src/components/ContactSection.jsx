@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import { FaMapMarkerAlt, FaPhone, FaEnvelope } from 'react-icons/fa';
 
 const ContactSection = () => {
@@ -18,11 +19,11 @@ const ContactSection = () => {
         const { firstName, lastName, email, message } = formData;
 
         if (!firstName || !lastName || !email || !message) {
-            alert("Please fill in all fields.");
+            toast.error("Please fill in all fields.");
             return;
         }
 
-        alert("Message sent successfully!");
+        toast.success("Message sent successfully!");
         setFormData({
             firstName: '',
             lastName: '',

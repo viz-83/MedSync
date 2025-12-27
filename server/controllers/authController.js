@@ -1,6 +1,6 @@
 const User = require('../models/User');
 const Doctor = require('../models/doctorModel');
-const sendEmail = require('../utils/email');
+
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
@@ -10,7 +10,7 @@ const logAudit = require('../utils/auditLogger');
 
 const streamClient = new StreamChat(process.env.STREAM_API_KEY, process.env.STREAM_API_SECRET);
 
-const generateOTP = () => Math.floor(100000 + Math.random() * 900000).toString();
+
 
 const signToken = (id, role) => {
     return jwt.sign({ id, role }, process.env.JWT_SECRET, {
@@ -81,16 +81,14 @@ exports.signup = async (req, res) => {
         if (user) return res.status(400).json({ message: 'User already exists' });
 
         const hashedPassword = await bcrypt.hash(password, 10);
-        const otp = generateOTP();
-        const otpExpires = Date.now() + 10 * 60 * 1000; // 10 mins
 
+        // CREATE USER (Auto-Verified, No OTP)
         user = new User({
             name,
             email,
             password: hashedPassword,
             role,
-            otp,
-            otpExpires
+            isVerified: true // <--- Auto verify
         });
 
         await user.save();
@@ -104,98 +102,25 @@ exports.signup = async (req, res) => {
             });
         } catch (streamError) {
             console.error('Stream Sync Error (Signup):', streamError);
-            // Don't fail signup if stream sync fails, but log it
         }
-
-        try {
-            await sendEmail({
-                email,
-                subject: 'Your OTP Code',
-                message: `Your OTP code is ${otp}`
-            });
-        } catch (emailError) {
-            console.error('Email Send Error:', emailError);
-
-            try {
-                await User.deleteOne({ _id: user._id });
-            } catch (delError) {
-                // ignore
-            }
-
-            return res.status(500).json({ message: 'Failed to send OTP email. Please check your email address or try again later.' });
-        }
-
-        res.status(201).json({ message: 'User registered. Please verify OTP.' });
 
         // Audit Log
         logAudit(req, {
-            user: null, // User not fully created/verified yet in session, or use 'user' obj if saving succeeded
-            action: 'SIGNUP_INITIATED',
-            details: { email, role }
+            user: user, // User exists now
+            action: 'SIGNUP_COMPLETED',
+            details: { email, role, method: 'direct_no_otp' }
         });
+
+        // Log them in immediately
+        createSendToken(user, 201, res);
+
     } catch (error) {
         console.error('Signup Error:', error);
         res.status(500).json({ message: error.message });
     }
 };
 
-exports.verifyOTP = async (req, res) => {
-    try {
-        const { email, otp } = req.body;
-        const user = await User.findOne({ email });
-
-        if (!user) return res.status(400).json({ message: 'User not found' });
-        if (user.isVerified) return res.status(400).json({ message: 'User already verified' });
-
-        // 1. Check if OTP is locked
-        if (user.otpLockedUntil && user.otpLockedUntil > Date.now()) {
-            const waitTime = Math.ceil((user.otpLockedUntil - Date.now()) / 60000);
-            return res.status(429).json({ message: `OTP verification locked. Please try again in ${waitTime} minutes.` });
-        }
-
-        // 2. Validate OTP
-        if (user.otp !== otp || user.otpExpires < Date.now()) {
-            // Increment Failed Attempts
-            user.otpAttempts += 1;
-
-            // Lock if attempts > 5
-            if (user.otpAttempts >= 5) {
-                user.otpLockedUntil = Date.now() + 15 * 60 * 1000; // 15 mins
-                user.otpAttempts = 0;
-                await user.save();
-                return res.status(429).json({ message: 'Too many failed OTP attempts. Verification locked for 15 minutes.' });
-            }
-
-            await user.save();
-            return res.status(400).json({ message: 'Invalid or expired OTP' });
-        }
-
-        // 3. Success - Reset Fields
-        user.isVerified = true;
-        user.otp = undefined;
-        user.otpExpires = undefined;
-        user.otpAttempts = 0;
-        user.otpLockedUntil = undefined;
-        await user.save();
-
-        let isDoctorProfileComplete = false;
-        if (user.role === 'doctor') {
-            const doctor = await Doctor.findOne({ user: user._id });
-            if (doctor) isDoctorProfileComplete = true;
-        }
-
-        // Audit Log
-        logAudit(req, {
-            user: user,
-            action: 'OTP_VERIFIED',
-            details: { email: user.email }
-        });
-
-        createSendToken(user, 200, res, isDoctorProfileComplete);
-    } catch (error) {
-        res.status(500).json({ message: error.message });
-    }
-};
+// verifyOTP removed
 
 exports.login = async (req, res) => {
     try {
@@ -230,7 +155,13 @@ exports.login = async (req, res) => {
             return res.status(400).json({ message: 'Invalid credentials' });
         }
 
-        if (!user.isVerified) return res.status(400).json({ message: 'Please verify your email first' });
+        if (!user.isVerified) {
+            // Auto-verify legacy users or just allow them? 
+            // Let's just allow them and maybe update the flag implicitly or ignore it.
+            // Updating it is safer for consistency.
+            user.isVerified = true;
+            await user.save();
+        }
 
         // 3. Reset Locking Fields on Success
         user.loginAttempts = 0;

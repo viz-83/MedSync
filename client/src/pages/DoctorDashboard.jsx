@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
 import { useNavigate } from 'react-router-dom';
@@ -51,7 +52,7 @@ const DoctorDashboard = () => {
             }
         } catch (error) {
             console.error('Error joining video:', error);
-            alert(error.response?.data?.message || 'Failed to join video call');
+            toast.error(error.response?.data?.message || 'Failed to join video call');
         }
     };
 
@@ -72,7 +73,7 @@ const DoctorDashboard = () => {
             }
         } catch (error) {
             console.error('Error opening chat:', error);
-            alert(error.response?.data?.message || 'Failed to open chat');
+            toast.error(error.response?.data?.message || 'Failed to open chat');
         }
     };
 
@@ -125,7 +126,7 @@ const DoctorDashboard = () => {
                 </div>
 
                 {appointments.length === 0 ? (
-                    <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-200 shadow-sm">
+                    <div className="text-center py-20 bg-white dark:bg-surface rounded-3xl border border-dashed border-gray-100 dark:border-gray-700 shadow-sm">
                         <div className="text-6xl mb-4">📅</div>
                         <h3 className="text-xl font-bold text-text-primary">No appointments scheduled</h3>
                         <p className="text-text-secondary mt-2">Your upcoming appointments will appear here.</p>
@@ -133,11 +134,11 @@ const DoctorDashboard = () => {
                 ) : (
                     <div className="grid gap-6">
                         {appointments.map((apt) => (
-                            <Card key={apt._id} className="hover:shadow-lg transition-all duration-300 border border-gray-100 overflow-hidden">
+                            <Card key={apt._id} className="hover:shadow-lg transition-all duration-300 border border-gray-50 dark:border-white/5 overflow-hidden">
                                 <div className="p-6">
                                     <div className="flex flex-col md:flex-row justify-between items-start gap-4 mb-6">
                                         <div className="flex items-start md:items-center gap-4">
-                                            <div className="w-14 h-14 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-2xl flex items-center justify-center text-blue-600 font-bold text-xl shadow-inner">
+                                            <div className="w-14 h-14 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-300 font-bold text-xl shadow-inner border border-blue-50 dark:border-blue-900/40">
                                                 {apt.patient.name.charAt(0)}
                                             </div>
                                             <div>
@@ -157,7 +158,7 @@ const DoctorDashboard = () => {
                                         </Badge>
                                     </div>
 
-                                    <div className="grid grid-cols-2 md:flex md:flex-wrap gap-3 pt-4 border-t border-gray-50">
+                                    <div className="grid grid-cols-2 md:flex md:flex-wrap gap-3 pt-4 border-t border-gray-50 dark:border-white/5">
                                         <Button
                                             onClick={() => handleJoinVideo(apt._id)}
                                             disabled={apt.status === 'CANCELLED' || apt.status === 'COMPLETED'}
@@ -191,14 +192,14 @@ const DoctorDashboard = () => {
                                         <Button
                                             variant="ghost"
                                             onClick={() => navigate(`/doctor/patient/${apt.patient._id}/reports`)}
-                                            className="w-full md:w-auto text-sm text-purple-600 hover:bg-purple-50 hover:text-purple-700"
+                                            className="w-full md:w-auto text-sm text-purple-600 dark:text-purple-400 hover:bg-purple-50 dark:hover:bg-purple-900/20 hover:text-purple-700"
                                         >
                                             Lab Reports
                                         </Button>
                                         <Button
                                             variant="ghost"
                                             onClick={() => navigate(`/doctor/patient/${apt.patient._id}/vitals`)}
-                                            className="w-full md:w-auto text-sm text-red-600 hover:bg-red-50 hover:text-red-700"
+                                            className="w-full md:w-auto text-sm text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 hover:text-red-700"
                                         >
                                             Vitals
                                         </Button>

@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import { Stethoscope } from 'lucide-react';
 
 const SymptomChecker = () => {
     const [symptoms, setSymptoms] = useState('');
@@ -56,8 +57,8 @@ const SymptomChecker = () => {
             <div className="flex-1 flex flex-col items-center justify-center p-4">
                 <Card className="w-full max-w-2xl p-8 md:p-12 shadow-xl border-t-4 border-cta">
                     <div className="text-center mb-10">
-                        <div className="w-16 h-16 bg-secondary/30 rounded-2xl flex items-center justify-center mx-auto mb-6 text-3xl shadow-sm">
-                            🩺
+                        <div className="w-16 h-16 bg-secondary/30 rounded-2xl flex items-center justify-center mx-auto mb-6 shadow-sm text-cta">
+                            <Stethoscope className="w-8 h-8" />
                         </div>
                         <h1 className="text-3xl font-heading font-bold text-text-primary mb-3">Symptom Checker</h1>
                         <p className="text-text-secondary text-lg max-w-md mx-auto">
@@ -71,7 +72,7 @@ const SymptomChecker = () => {
                                 value={symptoms}
                                 onChange={(e) => setSymptoms(e.target.value)}
                                 placeholder="e.g. I have a severe headache, sensitivity to light, and nausea since yesterday..."
-                                className="w-full h-40 p-6 rounded-2xl border border-gray-200 dark:border-gray-700 focus:border-cta focus:ring-2 focus:ring-primary/20 bg-white dark:bg-background-subtle resize-none text-lg placeholder:text-gray-400 dark:placeholder:text-gray-500 text-text-primary dark:text-text-primary focus:outline-none transition-all shadow-inner"
+                                className="w-full h-40 p-6 rounded-2xl border border-gray-50 dark:border-white/10 focus:border-cta focus:ring-2 focus:ring-primary/20 bg-white dark:bg-background-subtle resize-none text-lg placeholder:text-gray-400 dark:placeholder:text-gray-500 text-text-primary dark:text-text-primary focus:outline-none transition-all shadow-inner"
                             />
                         </div>
 
@@ -86,7 +87,7 @@ const SymptomChecker = () => {
                     </div>
 
                     {result && (
-                        <div className="mt-10 pt-10 border-t border-gray-100 dark:border-gray-700 animate-fadeIn">
+                        <div className="mt-10 pt-10 border-t border-gray-50 dark:border-white/10 animate-fadeIn">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-xl font-heading font-bold text-text-primary">Analysis Result</h3>
                                 <Badge variant={getSeverityColor(result.severity)} className="text-sm px-3 py-1 uppercase tracking-wide font-bold">

@@ -25,21 +25,19 @@ export const MedicineCartProvider = ({ children }) => {
 
     // 3. Actions
     const addToCart = (medicine) => {
-        setCart(prevCart => {
-            const existingItem = prevCart.find(item => item._id === medicine._id);
+        const existingItem = cart.find(item => item._id === medicine._id);
 
-            if (existingItem) {
-                toast.success(`Increased quantity for ${medicine.name}`);
-                return prevCart.map(item =>
-                    item._id === medicine._id
-                        ? { ...item, quantity: item.quantity + 1 }
-                        : item
-                );
-            } else {
-                toast.success(`${medicine.name} added to cart!`);
-                return [...prevCart, { ...medicine, quantity: 1 }];
-            }
-        });
+        if (existingItem) {
+            toast.success(`Increased quantity for ${medicine.name}`);
+            setCart(prevCart => prevCart.map(item =>
+                item._id === medicine._id
+                    ? { ...item, quantity: item.quantity + 1 }
+                    : item
+            ));
+        } else {
+            toast.success(`${medicine.name} added to cart!`);
+            setCart(prevCart => [...prevCart, { ...medicine, quantity: 1 }]);
+        }
     };
 
     const removeFromCart = (medicineId) => {

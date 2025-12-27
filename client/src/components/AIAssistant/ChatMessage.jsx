@@ -11,7 +11,7 @@ const ActionChip = ({ action, onClick }) => {
             onClick={() => onClick(action)}
             onMouseEnter={() => setIsHovered(true)}
             onMouseLeave={() => setIsHovered(false)}
-            className="px-3 py-1.5 border border-cta/20 dark:border-cta/40 text-cta dark:text-cta-hover text-xs font-semibold rounded-full transition-colors shadow-sm"
+            className="px-3 py-1.5 border border-cta/20 dark:border-cta/40 text-cta dark:text-cta-hover text-[10px] font-semibold rounded-full transition-colors shadow-sm"
             style={{
                 backgroundColor: isHovered ? 'var(--bg-subtle)' : 'var(--bg-surface)'
             }}
@@ -39,13 +39,13 @@ const ChatMessage = ({ message, isUser, actions, onActionClick }) => {
                 {/* Message Bubble */}
                 <div className={`flex flex-col ${isUser ? 'items-end' : 'items-start'}`}>
                     <div className={`
-                        p-4 rounded-2xl text-sm leading-relaxed shadow-sm border
+                        p-3 rounded-2xl text-xs leading-relaxed shadow-sm border
                         ${isUser
                             ? 'bg-cta text-white border-cta rounded-tr-none'
                             : 'bg-white dark:bg-surface text-text-primary dark:text-text-primary border-gray-100 dark:border-white/5 rounded-tl-none'}
                     `}>
                         {/* Render simple markdown/text */}
-                        <div className="prose prose-sm max-w-none dark:prose-invert">
+                        <div className="font-body text-xs leading-relaxed break-words [&_p]:text-xs [&_p]:leading-relaxed [&_li]:text-xs [&_li]:leading-relaxed [&_p]:text-inherit [&_li]:text-inherit [&>p]:mb-1 [&>p:last-child]:mb-0 [&>ul]:list-disc [&>ul]:ml-4">
                             <ReactMarkdown>{message}</ReactMarkdown>
                         </div>
                     </div>

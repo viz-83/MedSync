@@ -93,7 +93,7 @@ const PharmacyDashboard = () => {
                                 </thead>
                                 <tbody className="divide-y divide-gray-100">
                                     {filteredOrders.map((order) => (
-                                        <tr key={order._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition border-b border-gray-100 dark:border-gray-800 last:border-0">
+                                        <tr key={order._id} className="hover:bg-gray-50 dark:hover:bg-gray-800/50 transition border-b border-gray-50 dark:border-white/5 last:border-0">
                                             <td className="px-6 py-4">
                                                 <span className="font-mono text-xs font-bold bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded text-text-primary">#{order._id.slice(-6)}</span>
                                                 <p className="text-xs text-gray-400 mt-1">{format(new Date(order.createdAt), 'MMM dd, HH:mm')}</p>

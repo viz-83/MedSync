@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
+import { FaCalendarAlt, FaClock } from 'react-icons/fa';
 import axios from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import { useStreamSession } from '../context/StreamSessionContext';
 import Card from './ui/Card';
 import Button from './ui/Button';
 import Badge from './ui/Badge';
+import Skeleton from './ui/Skeleton';
 
 const MyAppointmentsSection = () => {
     const [appointments, setAppointments] = useState([]);
@@ -50,7 +53,7 @@ const MyAppointmentsSection = () => {
             }
         } catch (error) {
             console.error('Error joining video:', error);
-            alert('Failed to join video call. Please try again.');
+            toast.error('Failed to join video call. Please try again.');
         }
     };
 
@@ -71,7 +74,7 @@ const MyAppointmentsSection = () => {
             }
         } catch (error) {
             console.error('Error opening chat:', error);
-            alert('Failed to open chat. Please try again.');
+            toast.error('Failed to open chat. Please try again.');
         }
     };
 
@@ -97,8 +100,23 @@ const MyAppointmentsSection = () => {
 
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-cta"></div>
+            <div className="space-y-8">
+                <Skeleton className="h-8 w-48 mb-6" />
+                <div className="grid grid-cols-1 gap-6">
+                    {[1, 2].map(i => (
+                        <div key={i} className="bg-surface border border-gray-100 dark:border-gray-700 rounded-2xl p-4 sm:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center">
+                            <Skeleton className="h-16 w-16 rounded-2xl" />
+                            <div className="flex-1 w-full space-y-3">
+                                <Skeleton className="h-6 w-48" />
+                                <Skeleton className="h-4 w-32" />
+                            </div>
+                            <div className="flex gap-3 w-full md:w-auto">
+                                <Skeleton className="h-10 w-24 rounded-lg" />
+                                <Skeleton className="h-10 w-24 rounded-lg" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
             </div>
         );
     }
@@ -118,7 +136,9 @@ const MyAppointmentsSection = () => {
 
             {appointments.length === 0 ? (
                 <div className="text-center py-24 bg-white dark:bg-surface rounded-3xl border border-dashed border-gray-200 dark:border-gray-700">
-                    <div className="text-6xl mb-6">📅</div>
+                    <div className="flex justify-center mb-6 text-cta/50 dark:text-gray-600">
+                        <FaCalendarAlt size={64} />
+                    </div>
                     <h3 className="text-xl font-bold text-text-primary mb-2">No appointments yet</h3>
                     <p className="text-text-secondary mb-8 max-w-sm mx-auto">Book your first consultation with a specialist today and take control of your health.</p>
                     <Button onClick={() => navigate('/find-doctors')} size="lg" className="shadow-lg shadow-cta/20">
@@ -128,11 +148,11 @@ const MyAppointmentsSection = () => {
             ) : (
                 <div className="grid grid-cols-1 gap-6">
                     {appointments.map((apt) => (
-                        <Card key={apt._id} className="hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700 overflow-hidden">
-                            <div className="p-6 sm:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center">
+                        <Card key={apt._id} className="border border-gray-100 dark:border-gray-700 overflow-hidden">
+                            <div className="p-4 sm:p-8 flex flex-col md:flex-row gap-6 md:gap-8 items-start md:items-center">
                                 {/* Doctor Info */}
                                 <div className="flex-1 flex items-start gap-4 w-full">
-                                    <div className="w-16 h-16 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/40 dark:to-indigo-900/40 rounded-2xl flex items-center justify-center text-blue-600 dark:text-blue-300 font-bold text-2xl shadow-inner">
+                                    <div className="w-16 h-16 bg-cta/10 dark:bg-cta/20 rounded-2xl flex items-center justify-center text-cta dark:text-cta-hover font-bold text-2xl shadow-inner border border-cta/20">
                                         {apt.doctor.name.charAt(0)}
                                     </div>
                                     <div className="flex-1">
@@ -149,11 +169,11 @@ const MyAppointmentsSection = () => {
 
                                         <div className="mt-4 flex flex-wrap gap-4 text-sm text-text-secondary">
                                             <div className="flex items-center px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" style={{ backgroundColor: 'var(--bg-surface)' }}>
-                                                <span className="mr-2">📅</span>
+                                                <FaCalendarAlt className="mr-2 text-cta" />
                                                 <span className="font-medium text-text-primary">{formatDate(apt.date)}</span>
                                             </div>
                                             <div className="flex items-center px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700 shadow-sm" style={{ backgroundColor: 'var(--bg-surface)' }}>
-                                                <span className="mr-2">⏰</span>
+                                                <FaClock className="mr-2 text-cta" />
                                                 <span className="font-medium text-text-primary">{apt.startTime} - {apt.endTime}</span>
                                             </div>
                                             <div className="hidden md:block">

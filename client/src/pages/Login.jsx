@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from '../utils/axiosInstance';
 import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../context/AuthContext';
 import Card from '../components/ui/Card';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
@@ -10,6 +11,7 @@ const Login = () => {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState('');
     const navigate = useNavigate();
+    const { login } = useAuth();
 
     const handleChange = (e) => {
         setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -23,8 +25,9 @@ const Login = () => {
 
         try {
             const res = await axios.post('http://localhost:5000/api/auth/login', formData, { withCredentials: true });
-            localStorage.setItem('token', res.data.token);
-            localStorage.setItem('user', JSON.stringify(res.data.user));
+
+            // Use AuthContext Login (handles storage and state)
+            login(res.data.user, res.data.token);
 
             if (res.data.user.role === 'doctor') {
                 if (res.data.isDoctorProfileComplete) {
@@ -46,7 +49,7 @@ const Login = () => {
             <Card className="w-full max-w-md p-8 md:p-10 shadow-xl border-t-4 border-cta">
                 <div className="text-center mb-8">
                     <h1 className="text-3xl font-heading font-bold text-text-primary mb-2">Welcome Back</h1>
-                    <p className="text-text-secondary">Sign in to access your healthcare portal</p>
+                    <p className="text-text-secondary">Log in to access your healthcare portal</p>
                 </div>
 
                 {error && (
@@ -79,7 +82,7 @@ const Login = () => {
                         size="md"
                         disabled={isLoading}
                     >
-                        {isLoading ? 'Signing in...' : 'Sign In'}
+                        {isLoading ? 'Logging in...' : 'Log In'}
                     </Button>
                 </form>
 

@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import toast from 'react-hot-toast';
 import axios from '../utils/axiosInstance';
 import { useNavigate } from 'react-router-dom';
 import Navbar from '../components/Navbar';
@@ -42,7 +43,7 @@ const DoctorOnboarding = () => {
                 setLocationStatus('error');
             });
         } else {
-            alert('Geolocation is not supported by this browser.');
+            toast.error('Geolocation is not supported by this browser.');
         }
     };
 
@@ -61,7 +62,7 @@ const DoctorOnboarding = () => {
             }
         } catch (error) {
             console.error('Error updating profile:', error);
-            alert(error.response?.data?.message || 'Failed to update profile.');
+            toast.error(error.response?.data?.message || 'Failed to update profile.');
         } finally {
             setLoading(false);
         }
@@ -71,7 +72,7 @@ const DoctorOnboarding = () => {
         <div className="min-h-screen bg-background-light flex flex-col font-body">
             <Navbar />
             <div className="flex-1 flex flex-col items-center justify-center p-4">
-                <Card className="w-full max-w-3xl p-8 md:p-10 shadow-xl border-t-4 border-cta">
+                <Card className="w-full max-w-3xl p-4 sm:p-8 md:p-10 shadow-xl border-t-4 border-cta">
                     <div className="text-center mb-8">
                         <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl shadow-sm">
                             👨‍⚕️

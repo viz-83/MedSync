@@ -3,27 +3,27 @@ import { FaPlay } from 'react-icons/fa';
 
 const BentoGrid = () => {
     return (
-        <section className="py-24 bg-background-light text-text-primary">
+        <section className="py-24 bg-cta text-white">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="text-center mb-16">
-                    <h2 className="text-4xl md:text-5xl font-heading font-bold tracking-tight mb-4 text-text-primary">
+                    <h2 className="text-4xl md:text-5xl font-heading font-bold tracking-tight mb-4 text-white">
                         Complete Care, Simplified
                     </h2>
-                    <p className="text-text-secondary text-lg max-w-2xl mx-auto">
+                    <p className="text-white/80 text-lg max-w-2xl mx-auto">
                         From AI-powered diagnostics to 1-on-1 specialist consultations, we've built a healthcare ecosystem designed entirely around you.
                     </p>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 h-auto lg:h-[600px]">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 h-auto lg:h-[600px]">
 
                     {/* 1. Lab Results */}
-                    <div className="bg-surface rounded-[2rem] p-8 text-text-primary flex flex-col justify-between group overflow-hidden relative min-h-[300px] border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-shadow duration-300">
+                    <div className="bg-surface rounded-[2rem] p-6 sm:p-8 text-text-primary flex flex-col justify-between group overflow-hidden relative min-h-[300px] border border-gray-50 dark:border-white/5 hover:shadow-xl transition-shadow duration-300">
                         <div className="relative z-10 block">
                             <h3 className="text-2xl font-body font-bold mb-2">Precision Diagnostics</h3>
                             <p className="text-text-secondary">Clinical-grade lab results delivered to your device in 24 hours.</p>
                         </div>
                         <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-secondary/30 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700"></div>
-                        <div className="mt-8 bg-background-light p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transform rotate-2 group-hover:rotate-0 transition-transform duration-500 hover:scale-105 relative overflow-hidden">
+                        <div className="mt-8 bg-background-light p-4 rounded-xl shadow-sm border border-gray-50 dark:border-white/5 transform rotate-2 group-hover:rotate-0 transition-transform duration-500 hover:scale-105 relative overflow-hidden">
                             <div className="absolute top-0 left-0 w-1 h-full bg-cta"></div>
                             <div className="h-2 w-24 bg-gray-200 dark:bg-gray-700 rounded mb-3"></div>
                             <div className="flex items-center gap-2 mb-2">
@@ -40,7 +40,7 @@ const BentoGrid = () => {
                     </div>
 
                     {/* 2. Vitals Monitoring */}
-                    <div className="bg-secondary/20 rounded-[2rem] p-8 text-text-primary flex flex-col justify-between group overflow-hidden min-h-[300px] border border-secondary/20 hover:shadow-xl transition-shadow duration-300">
+                    <div className="bg-secondary/20 rounded-[2rem] p-6 sm:p-8 text-text-primary flex flex-col justify-between group overflow-hidden min-h-[300px] border border-secondary/10 hover:shadow-xl transition-shadow duration-300">
                         <div>
                             <h3 className="text-2xl font-body font-bold mb-2">Real-time Monitoring</h3>
                             <p className="text-text-secondary">Track vital trends like BP & Glucose with medical accuracy.</p>
@@ -59,7 +59,7 @@ const BentoGrid = () => {
                     </div>
 
                     {/* 3. AI Assistant */}
-                    <div className="bg-surface rounded-[2rem] p-8 text-text-primary flex flex-col justify-between group overflow-hidden min-h-[300px] border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-shadow duration-300">
+                    <div className="bg-surface rounded-[2rem] p-6 sm:p-8 text-text-primary flex flex-col justify-between group overflow-hidden min-h-[300px] border border-gray-50 dark:border-white/5 hover:shadow-xl transition-shadow duration-300">
                         <div className="z-10 relative">
                             <h3 className="text-2xl font-body font-bold mb-2">AI Health Assistant</h3>
                             <p className="text-text-secondary">Instant symptom assessment powered by advanced AI.</p>
@@ -75,10 +75,10 @@ const BentoGrid = () => {
                     </div>
 
                     {/* 4. Doctor Reports (Wide) */}
-                    <div className="lg:col-span-2 bg-surface dark:bg-gray-800/50 rounded-[2rem] p-8 text-text-primary flex flex-col md:flex-row items-center gap-8 group overflow-hidden min-h-[300px] border border-secondary/20 hover:shadow-xl transition-shadow duration-300">
+                    <div className="lg:col-span-2 bg-white dark:bg-gray-800/50 rounded-[2rem] p-6 sm:p-8 text-gray-900 dark:text-gray-100 flex flex-col md:flex-row items-center gap-8 group overflow-hidden min-h-[300px] border border-secondary/10 hover:shadow-xl transition-shadow duration-300">
                         <div className="md:w-1/2 relative z-10">
-                            <h3 className="text-2xl font-body font-bold mb-4">Comprehensive Care Plans</h3>
-                            <p className="text-text-secondary leading-relaxed mb-6">
+                            <h3 className="text-2xl font-body font-bold mb-4 text-gray-900 dark:text-white">Comprehensive Care Plans</h3>
+                            <p className="text-gray-600 dark:text-gray-300 leading-relaxed mb-6">
                                 Receive a detailed health breakdown reviewed by board-certified specialists, complete with actionable prescriptions and lifestyle guides.
                             </p>
                             <div className="flex gap-2">
@@ -107,7 +107,7 @@ const BentoGrid = () => {
                     </div>
 
                     {/* 5. Expert Support */}
-                    <div className="bg-surface rounded-[2rem] p-8 text-text-primary flex flex-col justify-between group overflow-hidden min-h-[300px] relative border border-gray-100 dark:border-gray-800 hover:shadow-xl transition-shadow duration-300">
+                    <div className="bg-surface rounded-[2rem] p-6 sm:p-8 text-text-primary flex flex-col justify-between group overflow-hidden min-h-[300px] relative border border-gray-50 dark:border-white/5 hover:shadow-xl transition-shadow duration-300">
                         <div className="relative z-10">
                             <h3 className="text-2xl font-body font-bold mb-2">Instant Specialist Access</h3>
                             <p className="text-text-secondary">Free 1:1 video consultations included with every plan.</p>
@@ -132,11 +132,7 @@ const BentoGrid = () => {
                     </div>
                 </div>
 
-                <div className="mt-16 text-center">
-                    <button className="bg-cta hover:bg-cta-hover text-white font-bold py-4 px-10 rounded-full transition-all shadow-xl shadow-cta/20 hover:shadow-2xl hover:shadow-cta/30 transform hover:-translate-y-1">
-                        Start your health journey
-                    </button>
-                </div>
+
             </div>
         </section>
     );

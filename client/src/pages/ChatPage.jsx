@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from 'react';
+import toast from 'react-hot-toast';
 import { useParams, useNavigate } from 'react-router-dom';
 import { StreamChat } from 'stream-chat';
 import { Chat, Channel, Window, ChannelHeader, MessageList, MessageInput, Thread } from 'stream-chat-react';
@@ -41,7 +42,7 @@ const ChatPage = () => {
                     }
                 } catch (error) {
                     console.error('Error fetching token:', error);
-                    alert('Failed to join chat. Please try again.');
+                    toast.error('Failed to join chat. Please try again.');
                     navigate('/');
                     return;
                 }
@@ -114,7 +115,7 @@ const ChatPage = () => {
 
     return (
         <div className="h-screen flex flex-col font-body bg-background-light dark:bg-background-dark">
-            <div className="bg-white dark:bg-surface shadow-sm p-4 flex justify-between items-center border-b border-gray-100 dark:border-gray-800 z-10">
+            <div className="bg-white dark:bg-surface shadow-sm p-4 flex justify-between items-center border-b border-gray-50 dark:border-white/5 z-10">
                 <div className="flex items-center gap-3">
                     <Button variant="ghost" size="sm" onClick={() => navigate('/')} className="pl-0 text-text-secondary dark:text-text-secondary hover:text-cta">
                         <FaArrowLeft className="mr-1" /> Back

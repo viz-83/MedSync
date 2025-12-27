@@ -69,11 +69,7 @@ const DiseaseMarquee = () => {
                     </div>
                 </div>
 
-                <div className="text-center mt-8">
-                    <button className="bg-cta hover:bg-white hover:text-cta text-white font-bold py-3 px-8 rounded-full transition-all duration-300 shadow-lg border border-cta">
-                        Start 5-min assessment
-                    </button>
-                </div>
+
 
             </div>
         </section>

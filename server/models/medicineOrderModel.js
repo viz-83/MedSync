@@ -63,7 +63,7 @@ const medicineOrderSchema = new mongoose.Schema({
 }, { timestamps: true });
 
 // Populate helpers
-medicineOrderSchema.pre(/^find/, function (next) {
+medicineOrderSchema.pre(/^find/, function () {
     this.populate({
         path: 'patient',
         select: 'name email'
@@ -71,7 +71,6 @@ medicineOrderSchema.pre(/^find/, function (next) {
         path: 'medicines.medicine',
         select: 'name brand image category'
     });
-    next();
 });
 
 module.exports = mongoose.model('MedicineOrder', medicineOrderSchema);

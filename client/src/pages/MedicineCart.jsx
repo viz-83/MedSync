@@ -3,6 +3,7 @@ import { useMedicineCart } from '../context/MedicineCartContext';
 import { useNavigate } from 'react-router-dom';
 import { Trash2, Plus, Minus, Home, ArrowRight, AlertTriangle } from 'lucide-react';
 import axiosInstance from '../utils/axiosInstance';
+import { openRazorpayCheckout } from '../utils/razorpay';
 import toast from 'react-hot-toast';
 
 const MedicineCart = () => {
@@ -35,13 +36,57 @@ const MedicineCart = () => {
                 prescriptionId: null // TODO: Implement file upload logic separately if needed
             };
 
+            // 1. Create Medicine Order
             const response = await axiosInstance.post('/api/v1/medicine-orders', orderData);
+            const medicineOrderId = response.data.data.order._id;
 
-            toast.success('Order placed successfully!');
-            clearCart();
-            navigate(`/medicines/orders/${response.data.data.order._id}`);
+            // 2. Create Payment Order (Razorpay)
+            // Note: We need the Payment Order specifically for Razorpay, using the amount from the backend
+            const paymentResponse = await axiosInstance.post('/api/v1/payments/create-order', {
+                orderType: 'MEDICINE',
+                orderId: medicineOrderId
+            });
+
+            const { razorpayOrderId, amount, currency, keyId } = paymentResponse.data.data;
+
+            // 3. Open Checkout
+            await openRazorpayCheckout({
+                razorpayOrderId,
+                amount,
+                currency,
+                keyId,
+                userDetails: {
+                    // Ideally fetch from user context if available, else blank
+                    name: "",
+                    email: "",
+                    contact: ""
+                },
+                onSuccess: async (paymentData) => {
+                    try {
+                        const verifyResponse = await axiosInstance.post('/api/v1/payments/verify', {
+                            ...paymentData,
+                            orderType: 'MEDICINE',
+                            orderId: medicineOrderId
+                        });
+
+                        if (verifyResponse.data.status === 'success') {
+                            toast.success('Payment Successful! Order Confirmed.');
+                            clearCart();
+                            navigate(`/medicines/orders/${medicineOrderId}`);
+                        }
+                    } catch (verifyError) {
+                        console.error("Verification Error", verifyError);
+                        toast.error('Payment verification failed. Please contact support.');
+                    }
+                },
+                onFailure: (error) => {
+                    console.error("Payment Failed", error);
+                    toast.error('Payment failed. Please try again.');
+                }
+            });
 
         } catch (error) {
+            console.error("Order Logic Error", error);
             toast.error(error.response?.data?.message || 'Failed to place order');
         } finally {
             setSubmitting(false);
@@ -107,19 +152,21 @@ const MedicineCart = () => {
                                     </div>
 
                                     <div className="flex justify-between items-center mt-4">
-                                        <div className="flex items-center gap-3 bg-gray-50 dark:bg-gray-800 rounded-lg p-1">
+                                        <div className="flex items-center gap-3 border border-gray-200 dark:border-gray-700 rounded-lg p-1" style={{ backgroundColor: 'var(--bg-surface)' }}>
                                             <button
                                                 onClick={() => updateQuantity(item._id, item.quantity - 1)}
-                                                className="p-1 hover:!bg-white dark:hover:!bg-gray-700 rounded-md transition shadow-sm"
+                                                className="p-1 rounded transition shadow-sm border border-gray-200 dark:border-gray-700"
+                                                style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--txt-primary)' }}
                                             >
-                                                <Minus className="h-3 w-3 text-gray-600 dark:text-gray-300" />
+                                                <Minus className="h-3 w-3" />
                                             </button>
-                                            <span className="text-sm font-medium w-4 text-center text-text-primary">{item.quantity}</span>
+                                            <span className="text-sm font-bold w-6 text-center" style={{ color: 'var(--txt-primary)' }}>{item.quantity}</span>
                                             <button
                                                 onClick={() => updateQuantity(item._id, item.quantity + 1)}
-                                                className="p-1 hover:!bg-white dark:hover:!bg-gray-700 rounded-md transition shadow-sm"
+                                                className="p-1 rounded transition shadow-sm border border-gray-200 dark:border-gray-700"
+                                                style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--txt-primary)' }}
                                             >
-                                                <Plus className="h-3 w-3 text-gray-600 dark:text-gray-300" />
+                                                <Plus className="h-3 w-3" />
                                             </button>
                                         </div>
 

@@ -33,7 +33,7 @@ const CustomVideoLayout = () => {
             {uniqueParticipants.map((participant) => (
                 <div
                     key={participant.sessionId}
-                    className="w-full md:w-1/2 lg:w-1/3 aspect-video relative bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-gray-800"
+                    className="w-full md:w-1/2 lg:w-1/3 aspect-video relative bg-gray-900 rounded-lg overflow-hidden shadow-lg border border-white/5"
                 >
                     <ParticipantView
                         participant={participant}

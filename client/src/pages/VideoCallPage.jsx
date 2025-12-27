@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
+import toast from 'react-hot-toast';
 import { useParams, useNavigate } from 'react-router-dom';
 import {
     StreamVideoClient,
@@ -131,7 +132,7 @@ const CustomCallControls = ({ onLeave }) => {
             <div className="relative">
                 {/* Reaction Menu */}
                 {showReactions && (
-                    <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-surface dark:bg-gray-800 rounded-2xl shadow-xl p-3 flex gap-3 animate-fade-in-up border border-gray-200 dark:border-gray-700 z-50 min-w-max">
+                    <div className="absolute bottom-20 left-1/2 transform -translate-x-1/2 bg-surface dark:bg-gray-800 rounded-2xl shadow-xl p-3 flex gap-3 animate-fade-in-up border border-gray-50 dark:border-white/5 z-50 min-w-max">
                         {[
                             { icon: '👍', type: 'reaction', emoji: ':thumbsup:' },
                             { icon: '👎', type: 'reaction', emoji: ':thumbsdown:' },
@@ -223,7 +224,7 @@ const VideoCallPage = () => {
                     }
                 } catch (error) {
                     console.error('Error fetching token:', error);
-                    alert('Failed to join call. Please try again.');
+                    toast.error('Failed to join call. Please try again.');
                     navigate('/');
                     return;
                 }
@@ -233,7 +234,7 @@ const VideoCallPage = () => {
 
             if (!currentSession.callId) {
                 console.error('Missing callId in session data');
-                alert('Invalid call session. Please contact support.');
+                toast.error('Invalid call session. Please contact support.');
                 return;
             }
 
@@ -279,7 +280,7 @@ const VideoCallPage = () => {
                     if (mounted) setPermissionDenied(errorMessage); // Store the actual error message
                     return; // Exit, logic below waits for permission fix
                 }
-                alert(`Failed to join call: ${errorMessage}`);
+                toast.error(`Failed to join call: ${errorMessage}`);
                 navigate('/');
                 return;
             }
@@ -432,10 +433,10 @@ const VideoCallPage = () => {
                             onClick={async () => {
                                 try {
                                     const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-                                    alert("✅ SUCCESS: Browser can access camera/mic! The issue is likely with the app connection. Please refresh.");
+                                    toast.success("✅ SUCCESS: Browser can access camera/mic! The issue is likely with the app connection. Please refresh.");
                                     stream.getTracks().forEach(t => t.stop());
                                 } catch (err) {
-                                    alert(`❌ FAILURE: Browser CANNOT access device. \nError: ${err.name} - ${err.message}\n\nPlease check Windows Privacy Settings or Driver drivers.`);
+                                    toast.error(`❌ FAILURE: Browser CANNOT access device. \nError: ${err.name} - ${err.message}\n\nPlease check Windows Privacy Settings or Driver drivers.`);
                                 }
                             }}
                             className="bg-primary hover:bg-green-700 text-white px-4 py-2 rounded-lg font-bold w-full transition-colors"

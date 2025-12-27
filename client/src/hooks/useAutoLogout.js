@@ -1,4 +1,5 @@
 import { useEffect, useCallback } from 'react';
+import toast from 'react-hot-toast';
 import { useNavigate } from 'react-router-dom';
 
 const useAutoLogout = (timeoutMs = 15 * 60 * 1000) => { // Default 15 minutes
@@ -10,7 +11,7 @@ const useAutoLogout = (timeoutMs = 15 * 60 * 1000) => { // Default 15 minutes
             console.log('Auto-logging out due to inactivity...');
             localStorage.removeItem('token');
             localStorage.removeItem('user');
-            alert('You have been logged out due to inactivity.');
+            toast.error('You have been logged out due to inactivity.');
             navigate('/login');
         }
     }, [navigate]);

@@ -56,7 +56,7 @@ const MyPrescriptions = () => {
                     <Button
                         variant="ghost"
                         onClick={() => navigate('/')}
-                        className="hover:bg-transparent hover:text-cta pl-0 md:pl-4"
+                        className="hover:!bg-transparent dark:hover:!bg-transparent hover:text-cta pl-0 md:pl-4"
                     >
                         <FaArrowLeft className="mr-2" /> Back to Dashboard
                     </Button>
@@ -71,7 +71,7 @@ const MyPrescriptions = () => {
                         {error}
                     </div>
                 ) : prescriptions.length === 0 ? (
-                    <div className="bg-white dark:bg-surface rounded-3xl p-12 text-center border border-dashed border-gray-200 dark:border-gray-700">
+                    <div className="bg-white dark:bg-surface rounded-3xl p-12 text-center border border-dashed border-gray-50 dark:border-white/5">
                         <div className="text-5xl mb-4 text-gray-300">💊</div>
                         <h3 className="text-xl font-bold text-text-primary">No prescriptions found</h3>
                         <p className="text-text-secondary mt-2">You haven't received any prescriptions yet.</p>
@@ -79,7 +79,7 @@ const MyPrescriptions = () => {
                 ) : (
                     <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
                         {prescriptions.map((script) => (
-                            <Card key={script._id} className="hover:shadow-lg transition-all duration-300 border border-gray-100 dark:border-gray-700 flex flex-col h-full">
+                            <Card key={script._id} className="hover:shadow-lg transition-all duration-300 border border-gray-50 dark:border-white/5 flex flex-col h-full">
                                 <div className="p-6 flex-1">
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="p-3 bg-blue-50 dark:bg-blue-900/20 rounded-xl text-cta">
@@ -97,10 +97,10 @@ const MyPrescriptions = () => {
                                         </p>
                                     </div>
 
-                                    <div className="flex items-center gap-3 mb-6 p-3 rounded-lg border border-gray-100 dark:border-gray-700"
+                                    <div className="flex items-center gap-3 mb-6 p-3 rounded-lg border border-gray-50 dark:border-white/5"
                                         style={{ backgroundColor: 'var(--bg-subtle)' }}
                                     >
-                                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 dark:text-gray-500 shadow-sm border border-gray-100 dark:border-gray-700"
+                                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 dark:text-gray-500 shadow-sm border border-gray-50 dark:border-white/5"
                                             style={{ backgroundColor: 'var(--bg-surface)' }}
                                         >
                                             <FaUserMd />
@@ -112,7 +112,7 @@ const MyPrescriptions = () => {
                                     </div>
                                 </div>
 
-                                <div className="p-4 border-t border-gray-100 dark:border-gray-700"
+                                <div className="p-4 border-t border-gray-50 dark:border-white/5"
                                     style={{ backgroundColor: 'var(--bg-subtle)' }}
                                 >
                                     {script.pdfUrl ? (

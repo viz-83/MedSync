@@ -61,7 +61,7 @@ const diagnosticOrderSchema = new mongoose.Schema({
     }
 });
 
-diagnosticOrderSchema.pre(/^find/, function (next) {
+diagnosticOrderSchema.pre(/^find/, function () {
     this.populate({
         path: 'tests.test',
         select: 'name category'
@@ -72,7 +72,6 @@ diagnosticOrderSchema.pre(/^find/, function (next) {
         path: 'assignedCollector',
         select: 'name mobile'
     });
-    next();
 });
 
 const DiagnosticOrder = mongoose.model('DiagnosticOrder', diagnosticOrderSchema);

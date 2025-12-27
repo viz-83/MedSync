@@ -43,8 +43,8 @@ const PatientVitals = () => {
         const valDisplay = type === 'BLOOD_PRESSURE' ? `${latest.value.systolic}/${latest.value.diastolic}` : latest.value;
 
         return (
-            <Card className="hover:shadow-lg transition-all duration-300 border-gray-100 dark:border-gray-700 overflow-hidden">
-                <div className={`p-4 border-b border-gray-50 dark:border-gray-800 flex justify-between items-center ${colorClass} bg-opacity-5 dark:bg-opacity-10`}>
+            <Card className="hover:shadow-lg transition-all duration-300 border-gray-50 dark:border-white/5 overflow-hidden">
+                <div className={`p-4 border-b border-gray-50 dark:border-white/5 flex justify-between items-center ${colorClass} bg-opacity-5 dark:bg-opacity-10`}>
                     <div className="flex items-center gap-2">
                         <div className={`p-2 rounded-lg ${colorClass} bg-opacity-20 text-gray-700 dark:text-gray-200`}>
                             {Icon && <Icon />}

@@ -3,6 +3,8 @@ import { useTestCart } from '../context/TestCartContext';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../utils/axiosInstance';
 import { Trash2, Calendar, MapPin, CreditCard, ArrowRight, AlertCircle, ShoppingCart } from 'lucide-react';
+import toast from 'react-hot-toast'; // Added toast for feedback
+import { openRazorpayCheckout } from '../utils/razorpay';
 
 const TestCart = () => {
     const { cart, removeFromCart, cartTotal, clearCart } = useTestCart();
@@ -41,15 +43,59 @@ const TestCart = () => {
                 }
             };
 
+            // 1. Create Diagnostic Order
             const res = await axiosInstance.post('/api/v1/test-orders', payload);
 
             if (res.data.status === 'success') {
-                clearCart();
-                navigate(`/tests/orders/${res.data.data.order._id}`);
+                const orderId = res.data.data.order._id;
+
+                // 2. Create Payment Order
+                const paymentResponse = await axiosInstance.post('/api/v1/payments/create-order', {
+                    orderType: 'LAB_TEST',
+                    orderId: orderId
+                });
+
+                const { razorpayOrderId, amount, currency, keyId } = paymentResponse.data.data;
+
+                // 3. Open Checkout
+                await openRazorpayCheckout({
+                    razorpayOrderId,
+                    amount,
+                    currency,
+                    keyId,
+                    userDetails: {
+                        name: "", // Fetch from context if possible
+                        email: "",
+                        contact: ""
+                    },
+                    onSuccess: async (paymentData) => {
+                        try {
+                            const verifyResponse = await axiosInstance.post('/api/v1/payments/verify', {
+                                ...paymentData,
+                                orderType: 'LAB_TEST',
+                                orderId: orderId
+                            });
+
+                            if (verifyResponse.data.status === 'success') {
+                                toast.success('Booking Confirmed & Payment Successful!');
+                                clearCart();
+                                navigate(`/tests/orders/${orderId}`);
+                            }
+                        } catch (verifyError) {
+                            console.error("Verification Error", verifyError);
+                            toast.error('Payment verification failed. Please contact support.');
+                        }
+                    },
+                    onFailure: (error) => {
+                        console.error("Payment Failed", error);
+                        toast.error('Payment failed. Please try again.');
+                    }
+                });
             }
         } catch (err) {
             console.error(err);
             setError(err.response?.data?.message || 'Failed to place order. Please try again.');
+            toast.error(err.response?.data?.message || 'Failed to initiate booking.');
         } finally {
             setLoading(false);
         }
@@ -119,7 +165,7 @@ const TestCart = () => {
                                 ))}
                             </ul>
                             <div
-                                className="px-6 py-4 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center"
+                                className="px-6 py-4 border-t border-gray-50 dark:border-white/5 flex justify-between items-center"
                                 style={{ backgroundColor: 'var(--bg-subtle)' }}
                             >
                                 <span className="font-medium text-text-primary">Total Amount</span>
@@ -128,9 +174,9 @@ const TestCart = () => {
                         </div>
 
                         {/* Collection Details Form */}
-                        <form id="checkout-form" onSubmit={handleSubmit} className="bg-white dark:bg-surface rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden">
+                        <form id="checkout-form" onSubmit={handleSubmit} className="bg-white dark:bg-surface rounded-lg shadow-sm border border-gray-50 dark:border-white/5 overflow-hidden">
                             <div
-                                className="px-6 py-4 border-b border-gray-200 dark:border-gray-700"
+                                className="px-6 py-4 border-b border-gray-50 dark:border-white/5"
                                 style={{ backgroundColor: 'var(--bg-subtle)' }}
                             >
                                 <h3 className="text-lg font-medium text-text-primary flex items-center">
@@ -147,7 +193,7 @@ const TestCart = () => {
                                         rows={3}
                                         value={details.fullAddress}
                                         onChange={handleChange}
-                                        className="mt-1 block w-full border border-gray-300 dark:border-gray-600 rounded-md shadow-sm py-2 px-3 focus:ring-teal-500 focus:border-teal-500 sm:text-sm bg-white dark:bg-gray-800 text-text-primary"
+                                        className="mt-1 block w-full border border-gray-50 dark:border-white/10 rounded-md shadow-sm py-2 px-3 focus:ring-teal-500 focus:border-teal-500 sm:text-sm bg-white dark:bg-gray-800 text-text-primary"
                                         placeholder="House No, Street, Landmark..."
                                         style={{ backgroundColor: 'var(--bg-surface)', color: 'var(--txt-primary)' }}
                                     />
@@ -252,7 +298,7 @@ const TestCart = () => {
                             <div className="bg-blue-50 border border-blue-100 rounded-md p-3 mb-6">
                                 <p className="text-xs text-blue-700 flex items-start">
                                     <AlertCircle className="h-4 w-4 mr-1 flex-shrink-0" />
-                                    Payment will be collected at home or you can pay online after booking.
+                                    Secure online payment via Razorpay.
                                 </p>
                             </div>
 
@@ -264,7 +310,7 @@ const TestCart = () => {
                             >
                                 {loading ? 'Processing...' : (
                                     <>
-                                        Confirm Booking
+                                        Pay & Confirm Booking
                                         <ArrowRight className="ml-2 h-5 w-5" />
                                     </>
                                 )}

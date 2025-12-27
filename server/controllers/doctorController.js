@@ -95,9 +95,8 @@ exports.getNearbyDoctors = catchAsync(async (req, res, next) => {
         };
     } else if (city) {
         query['location.city'] = { $regex: new RegExp(city, 'i') }; // Case-insensitive
-    } else {
-        return next(new AppError('Please provide either latitude/longitude or city to find doctors.', 400));
     }
+    // Else: If no lat/lng and no city, we just query based on specialization or return all.
 
     if (specialization) {
         query.specialization = { $regex: new RegExp(specialization, 'i') };
@@ -110,6 +109,19 @@ exports.getNearbyDoctors = catchAsync(async (req, res, next) => {
         results: doctors.length,
         data: {
             doctors
+        }
+    });
+});
+
+exports.getDoctorCities = catchAsync(async (req, res, next) => {
+    const cities = await Doctor.distinct('location.city');
+    const validCities = cities.filter(city => city).sort();
+
+    res.status(200).json({
+        status: 'success',
+        results: validCities.length,
+        data: {
+            cities: validCities
         }
     });
 });
