@@ -1,6 +1,8 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { FaInstagram, FaFacebook, FaLinkedin, FaTwitter, FaYoutube } from 'react-icons/fa';
+import medsyncLogo from '../assets/medsync_logo.png';
+
 
 const Footer = () => {
     const FooterHeading = ({ children }) => (
@@ -68,10 +70,8 @@ const Footer = () => {
 
                     {/* Column 4: Brand & Socials */}
                     <div>
-                        <Link to="/" className="flex items-center space-x-2 mb-6">
-                            <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-cta to-primary flex items-center justify-center text-white font-bold font-heading">
-                                M
-                            </div>
+                        <Link to="/" className="flex items-center space-x-1 mb-6">
+                            <img src={medsyncLogo} alt="MedSync Logo" className="w-12 h-12 object-contain" />
                             <span className="text-xl font-heading font-bold text-primary">
                                 MedSync
                             </span>

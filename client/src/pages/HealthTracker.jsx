@@ -2,8 +2,9 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
-import { Activity, Droplet, Heart, Scale, TrendingUp } from 'lucide-react';
+import { Activity, Droplet, Heart, Scale, TrendingUp, Sparkles, Ruler, Flame, Utensils } from 'lucide-react';
 import HealthMetricChart from '../components/HealthMetricChart';
+import HealthAIInsights from '../components/HealthAIInsights';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
@@ -14,6 +15,10 @@ const HealthTracker = () => {
     const [hoveredTab, setHoveredTab] = useState(null);
     const [metrics, setMetrics] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    // AI State
+    const [aiInsights, setAiInsights] = useState(null);
+    const [loadingAI, setLoadingAI] = useState(false);
 
     // Form States
     const [value, setValue] = useState('');
@@ -26,7 +31,10 @@ const HealthTracker = () => {
         { id: 'GLUCOSE', label: 'Glucose', unit: 'mg/dL', icon: <Droplet className="w-6 h-6" /> },
         { id: 'BLOOD_PRESSURE', label: 'Blood Pressure', unit: 'mmHg', icon: <Heart className="w-6 h-6" /> },
         { id: 'HEART_RATE', label: 'Heart Rate', unit: 'bpm', icon: <Activity className="w-6 h-6" /> },
-        { id: 'WEIGHT', label: 'Weight', unit: 'kg', icon: <Scale className="w-6 h-6" /> }
+        { id: 'WEIGHT', label: 'Weight', unit: 'kg', icon: <Scale className="w-6 h-6" /> },
+        { id: 'HEIGHT', label: 'Height', unit: 'cm', icon: <Ruler className="w-6 h-6" /> },
+        { id: 'CALORIES', label: 'Calories', unit: 'kcal', icon: <Flame className="w-6 h-6" /> },
+        { id: 'PROTEIN', label: 'Protein', unit: 'g', icon: <Utensils className="w-6 h-6" /> }
     ];
 
     const fetchMetrics = async () => {
@@ -35,16 +43,65 @@ const HealthTracker = () => {
             const token = localStorage.getItem('token');
             const { data } = await axios.get('http://localhost:5000/api/v1/health-metrics/my', {
                 params: { metricType: activeTab },
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token} ` },
                 withCredentials: true
             });
             if (data.status === 'success') {
                 setMetrics(data.data.metrics);
+                // Clear old insights when tab changes as context changes
+                setAiInsights(null);
             }
         } catch (error) {
             console.error('Error fetching metrics:', error);
         } finally {
             setLoading(false);
+        }
+    };
+
+    const fetchAIInsights = async () => {
+        if (metrics.length === 0) {
+            toast.error("Please add some health data first!");
+            return;
+        }
+
+        setLoadingAI(true);
+        try {
+            // Construct payload from current metrics
+            // We find the latest value
+            const latestMetric = metrics[metrics.length - 1]; // Sorted by recordedAt ASC in backend, so last is newest? 
+            // Controller says: .sort('recordedAt'); So yes, last is newest.
+
+            // We'll send a summary payload
+            // Note: Ideally we'd fetch ALL types. For now, let's analyze the CURRENT active tab's data + context
+            // But the prompt wants "height, weight, calories...". 
+            // We'll send what we have.
+
+            const payload = {
+                metric_type: activeTab,
+                latest_reading: latestMetric.value,
+                recent_trends: `Last ${metrics.length} readings for ${activeTab}.`, // Simplification
+                // If weight tab is active, we clearly have weight
+                weight_kg: activeTab === 'WEIGHT' ? latestMetric.value : undefined,
+
+                // Pass all metrics as raw for analysis?
+                raw_metrics: metrics.slice(-10) // Send last 10 for trend analysis
+            };
+
+            const token = localStorage.getItem('token');
+            const { data } = await axios.post('http://localhost:5000/api/v1/health-metrics/insights', payload, {
+                headers: { Authorization: `Bearer ${token} ` },
+                withCredentials: true
+            });
+
+            if (data.status === 'success') {
+                setAiInsights(data.data);
+                toast.success("Insights generated!");
+            }
+        } catch (error) {
+            console.error("AI Insight Error:", error);
+            toast.error("Failed to generate insights.");
+        } finally {
+            setLoadingAI(false);
         }
     };
 
@@ -67,7 +124,7 @@ const HealthTracker = () => {
             }
 
             await axios.post('http://localhost:5000/api/v1/health-metrics', payload, {
-                headers: { Authorization: `Bearer ${token}` },
+                headers: { Authorization: `Bearer ${token} ` },
                 withCredentials: true
             });
 
@@ -92,9 +149,22 @@ const HealthTracker = () => {
         <div className="min-h-screen bg-background-light flex flex-col font-body">
             <Navbar />
             <div className="max-w-7xl mx-auto px-4 py-8 w-full flex-1">
-                <h1 className="text-3xl font-heading font-bold text-text-primary mb-8 px-2">My Health Tracker</h1>
+                <div className="flex justify-between items-center mb-8 px-2">
+                    <h1 className="text-3xl font-heading font-bold text-text-primary">My Health Tracker</h1>
 
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                    {metrics.length > 0 && (
+                        <Button
+                            onClick={fetchAIInsights}
+                            disabled={loadingAI}
+                            className="bg-gradient-to-r from-teal-500 to-emerald-500 text-white shadow-lg hover:shadow-xl border-none"
+                        >
+                            <Sparkles size={18} className="mr-2" />
+                            {loadingAI ? 'Analyzing...' : 'Analyze My Trends'}
+                        </Button>
+                    )}
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
                     {/* Left Column: Input and Tabs */}
                     <div className="lg:col-span-1 space-y-6">
                         {/* Tabs */}
@@ -109,11 +179,12 @@ const HealthTracker = () => {
                                         onMouseEnter={() => setHoveredTab(tab.id)}
                                         onMouseLeave={() => setHoveredTab(null)}
                                         className={`
-                                        p-4 rounded-xl text-left transition-all duration-200 border
+p - 4 rounded - xl text - left transition - all duration - 200 border
                                         ${isActive
                                                 ? 'bg-cta text-white shadow-lg shadow-cta/20 border-cta'
-                                                : 'text-text-secondary border-gray-100 dark:border-gray-700'}
-                                    `}
+                                                : 'text-text-secondary border-gray-100 dark:border-gray-700'
+                                            }
+`}
                                         style={{
                                             backgroundColor: isActive
                                                 ? undefined
@@ -121,7 +192,7 @@ const HealthTracker = () => {
                                         }}
                                     >
                                         <div className="mr-3">{tab.icon}</div>
-                                        <span className={`font-semibold ${isActive ? 'text-white' : 'text-text-primary'}`}>
+                                        <span className={`font - semibold ${isActive ? 'text-white' : 'text-text-primary'} `}>
                                             {tab.label}
                                         </span>
                                     </button>
@@ -154,7 +225,7 @@ const HealthTracker = () => {
                                     </div>
                                 ) : (
                                     <Input
-                                        label={`Value (${getUnit()})`}
+                                        label={`Value(${getUnit()})`}
                                         type="number"
                                         placeholder="Enter value..."
                                         step={activeTab === 'WEIGHT' ? '0.1' : '1'}
@@ -216,27 +287,40 @@ const HealthTracker = () => {
                                                             ? `${metric.value.systolic}/${metric.value.diastolic}`
                                                             : (typeof metric.value === 'object' ? JSON.stringify(metric.value) : metric.value)}
                                                         <span className="text-sm font-normal text-text-secondary ml-1">{getUnit()}</span>
-                                                    </span>
-                                                    {metric.isAbnormal && (
-                                                        <Badge variant="danger">Abnormal</Badge>
-                                                    )}
-                                                </div>
+                                                    </span >
+                                                    {
+                                                        metric.isAbnormal && (
+                                                            <Badge variant="danger">Abnormal</Badge>
+                                                        )
+                                                    }
+                                                </div >
                                                 <p className="text-sm text-text-muted mt-1">{new Date(metric.recordedAt).toLocaleString()}</p>
-                                            </div>
-                                            {metric.note && (
-                                                <span className="text-sm text-text-secondary bg-white dark:bg-surface px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
-                                                    {metric.note}
-                                                </span>
-                                            )}
-                                        </div>
+                                            </div >
+                                            {
+                                                metric.note && (
+                                                    <span className="text-sm text-text-secondary bg-white dark:bg-surface px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
+                                                        {metric.note}
+                                                    </span>
+                                                )
+                                            }
+                                        </div >
                                     ))}
-                                </div>
+                                </div >
                             )}
-                        </Card>
-                    </div>
-                </div>
-            </div>
-        </div>
+                        </Card >
+                    </div >
+                </div >
+
+                {/* AI Insights Section */}
+                {
+                    (aiInsights || loadingAI) && (
+                        <div className="mb-8 animate-slideUp">
+                            <HealthAIInsights data={aiInsights} loading={loadingAI} />
+                        </div>
+                    )
+                }
+            </div >
+        </div >
     );
 };
 

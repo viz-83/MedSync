@@ -5,7 +5,7 @@ import Footer from '../components/Footer';
 import Button from '../components/ui/Button';
 import ServiceCard from '../components/ui/ServiceCard';
 import BentoGrid from '../components/BentoGrid';
-import doctorsHero from '../assets/doctors_hero.jpeg';
+import doctorsHero from '../assets/medsync_hero_themed.jpg';
 import { FaLaptopMedical, FaUserMd, FaNotesMedical, FaHeartbeat, FaCalendarAlt, FaMicroscope, FaSpa } from 'react-icons/fa';
 import { Pill } from 'lucide-react';
 import DiseaseMarquee from '../components/DiseaseMarquee';
@@ -119,11 +119,13 @@ const Landing = () => {
 
                 <div className="lg:w-1/2 relative w-full max-w-lg lg:max-w-none">
                     <div className="absolute inset-0 bg-gradient-to-tr from-primary/20 to-secondary/20 rounded-[3rem] transform rotate-3 scale-105 -z-10 blur-sm"></div>
-                    <img
-                        src={doctorsHero}
-                        alt="MedSync Doctor"
-                        className="w-full h-[500px] object-cover rounded-[2.5rem] shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-700 ease-out"
-                    />
+                    <div className="w-full h-[500px] rounded-[2.5rem] shadow-2xl transform -rotate-2 hover:rotate-0 transition-transform duration-700 ease-out overflow-hidden">
+                        <img
+                            src={doctorsHero}
+                            alt="MedSync Doctor"
+                            className="w-full h-full object-cover scale-110"
+                        />
+                    </div>
 
                     {/* Floating Badge */}
                     <div className="absolute -bottom-8 -left-8 bg-surface p-6 rounded-2xl shadow-xl flex items-center gap-4 animate-bounce-slow hidden sm:flex">

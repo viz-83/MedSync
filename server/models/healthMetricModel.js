@@ -8,7 +8,7 @@ const healthMetricSchema = new mongoose.Schema({
     },
     metricType: {
         type: String,
-        enum: ['GLUCOSE', 'BLOOD_PRESSURE', 'WEIGHT', 'HEART_RATE'],
+        enum: ['GLUCOSE', 'BLOOD_PRESSURE', 'WEIGHT', 'HEART_RATE', 'HEIGHT', 'CALORIES', 'PROTEIN'],
         required: [true, 'Please specify metric type']
     },
     value: {

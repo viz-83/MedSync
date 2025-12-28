@@ -49,7 +49,11 @@ const Medicines = () => {
             <div className="bg-white dark:bg-background-light pt-8 pb-16 px-4 shadow-sm border-b border-gray-100 dark:border-white/5">
                 <div className="max-w-7xl mx-auto">
                     <div className="flex justify-between items-center mb-6">
-                        <h1 className="text-3xl font-bold text-teal-700 dark:text-teal-400">Online Pharmacy</h1>
+                        <style>{`
+                            .pharmacy-title-fix { color: #000000 !important; }
+                            .dark .pharmacy-title-fix { color: #ffffff !important; }
+                        `}</style>
+                        <h1 className="text-3xl font-bold pharmacy-title-fix">Online Pharmacy</h1>
                         <button
                             onClick={() => navigate('/Medicines/cart')}
                             onMouseEnter={() => setIsCartHovered(true)}

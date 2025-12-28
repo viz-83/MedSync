@@ -12,7 +12,7 @@ const schemas = {
         password: Joi.string().required()
     }),
     metric: Joi.object({
-        metricType: Joi.string().valid('GLUCOSE', 'BLOOD_PRESSURE', 'WEIGHT', 'HEART_RATE').required(),
+        metricType: Joi.string().valid('GLUCOSE', 'BLOOD_PRESSURE', 'WEIGHT', 'HEART_RATE', 'HEIGHT', 'CALORIES', 'PROTEIN').required(),
         value: Joi.alternatives().try(Joi.number(), Joi.object()).required(),
         note: Joi.string().allow('', null)
     })

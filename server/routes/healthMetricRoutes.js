@@ -11,6 +11,9 @@ router.use(authController.protect);
 router.post('/', validate(schemas.metric), authController.restrictTo('user', 'patient'), healthMetricController.logHealthMetric);
 router.get('/my', healthMetricController.getMyHealthMetrics);
 
+// AI Insights
+router.post('/insights', authController.restrictTo('user', 'patient'), healthMetricController.getAIHealthInsights);
+
 // Patient Metrics (Doctor)
 router.get('/patient/:patientId', authController.restrictTo('doctor', 'admin'), healthMetricController.getPatientHealthMetrics);
 

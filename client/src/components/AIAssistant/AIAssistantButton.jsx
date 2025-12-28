@@ -11,7 +11,7 @@ const AIAssistantButton = () => {
     const [showTooltip, setShowTooltip] = useState(true);
 
     // Hide on auth pages and during calls/chats
-    const hideOnRoutes = ['/login', '/signup', '/verify-otp', '/doctor/onboarding'];
+    const hideOnRoutes = ['/login', '/signup', '/verify-otp', '/doctor/onboarding', '/symptom-checker'];
 
     // Regex for dynamic routes (video call and chat)
     const hidePatterns = [
