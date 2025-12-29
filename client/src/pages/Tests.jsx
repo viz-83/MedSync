@@ -22,7 +22,7 @@ const Tests = () => {
 
     const fetchTests = async () => {
         try {
-            const res = await axiosInstance.get('/api/v1/tests');
+            const res = await axiosInstance.get('/v1/tests');
             if (res.data.status === 'success') {
                 setTests(res.data.data.tests);
             }

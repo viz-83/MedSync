@@ -25,7 +25,7 @@ const Medicines = () => {
     const fetchMedicines = async () => {
         try {
             setLoading(true);
-            let query = '/api/v1/medicines?isActive=true';
+            let query = '/v1/medicines?isActive=true';
 
             if (searchTerm) {
                 query += `&search=${searchTerm}`;

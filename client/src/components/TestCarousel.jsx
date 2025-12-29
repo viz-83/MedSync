@@ -13,7 +13,7 @@ const TestCarousel = () => {
     useEffect(() => {
         const fetchTests = async () => {
             try {
-                const res = await axiosInstance.get('/api/v1/tests');
+                const res = await axiosInstance.get('/v1/tests');
                 // Filter to show only featured or all tests. Showing first 8 for carousel.
                 if (res.data.data.tests) {
                     setTests(res.data.data.tests.slice(0, 8));

@@ -13,7 +13,7 @@ const CollectorDashboard = () => {
 
     const fetchAssignedOrders = async () => {
         try {
-            const res = await axiosInstance.get('/api/v1/test-orders/assigned');
+            const res = await axiosInstance.get('/v1/test-orders/assigned');
             if (res.data.status === 'success') {
                 setOrders(res.data.data.orders);
             }
@@ -28,7 +28,7 @@ const CollectorDashboard = () => {
         if (!window.confirm('Confirm that you have collected the sample?')) return;
 
         try {
-            const res = await axiosInstance.patch(`/api/v1/test-orders/${orderId}/status`, {
+            const res = await axiosInstance.patch(`/v1/test-orders/${orderId}/status`, {
                 status: 'SAMPLE_COLLECTED'
             });
 

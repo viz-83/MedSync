@@ -16,7 +16,7 @@ const PharmacyDashboard = () => {
     const fetchOrders = async () => {
         try {
             setLoading(true);
-            const response = await axiosInstance.get('/api/v1/medicine-orders');
+            const response = await axiosInstance.get('/v1/medicine-orders');
             setOrders(response.data.data.orders);
         } catch (error) {
             console.error('Error fetching orders:', error);
@@ -28,7 +28,7 @@ const PharmacyDashboard = () => {
 
     const updateStatus = async (orderId, newStatus) => {
         try {
-            await axiosInstance.patch(`/api/v1/medicine-orders/${orderId}/status`, {
+            await axiosInstance.patch(`/v1/medicine-orders/${orderId}/status`, {
                 status: newStatus
             });
             toast.success(`Order updated to ${newStatus}`);

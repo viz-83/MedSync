@@ -39,7 +39,7 @@ const AIAssistantPanel = ({ isOpen, onClose }) => {
         setIsLoading(true);
 
         try {
-            const res = await axiosInstance.post('/api/v1/assistant/message', {
+            const res = await axiosInstance.post('/v1/assistant/message', {
                 message: text,
                 context: {}
             });

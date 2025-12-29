@@ -12,7 +12,7 @@ const MedicineOrderDetails = () => {
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                const response = await axiosInstance.get(`/api/v1/medicine-orders/${id}`);
+                const response = await axiosInstance.get(`/v1/medicine-orders/${id}`);
                 setOrder(response.data.data.order);
             } catch (error) {
                 console.error('Error fetching order:', error);

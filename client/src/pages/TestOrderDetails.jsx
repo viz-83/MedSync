@@ -12,7 +12,7 @@ const TestOrderDetails = () => {
     useEffect(() => {
         const fetchOrder = async () => {
             try {
-                const res = await axiosInstance.get(`/api/v1/test-orders/${id}`);
+                const res = await axiosInstance.get(`/v1/test-orders/${id}`);
                 if (res.data.status === 'success') {
                     setOrder(res.data.data.order);
                 }

@@ -50,7 +50,7 @@ const SymptomChecker = () => {
                     content: typeof m.content === 'string' ? m.content : JSON.stringify(m.content)
                 }));
 
-            const { data } = await axios.post('/api/v1/symptoms/analyze', {
+            const { data } = await axios.post('/v1/symptoms/analyze', {
                 symptoms: input,
                 history
             });

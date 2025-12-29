@@ -53,7 +53,7 @@ const WellbeingChat = () => {
         setIsTyping(true);
 
         try {
-            const res = await axiosInstance.post('/api/v1/wellbeing/message', {
+            const res = await axiosInstance.post('/v1/wellbeing/message', {
                 message: userText,
                 // Send history excluding the current new message
                 history: newHistory.slice(0, -1).filter(m => m.role !== 'system').slice(-10)

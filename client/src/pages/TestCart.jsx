@@ -44,13 +44,13 @@ const TestCart = () => {
             };
 
             // 1. Create Diagnostic Order
-            const res = await axiosInstance.post('/api/v1/test-orders', payload);
+            const res = await axiosInstance.post('/v1/test-orders', payload);
 
             if (res.data.status === 'success') {
                 const orderId = res.data.data.order._id;
 
                 // 2. Create Payment Order
-                const paymentResponse = await axiosInstance.post('/api/v1/payments/create-order', {
+                const paymentResponse = await axiosInstance.post('/v1/payments/create-order', {
                     orderType: 'LAB_TEST',
                     orderId: orderId
                 });
@@ -70,7 +70,7 @@ const TestCart = () => {
                     },
                     onSuccess: async (paymentData) => {
                         try {
-                            const verifyResponse = await axiosInstance.post('/api/v1/payments/verify', {
+                            const verifyResponse = await axiosInstance.post('/v1/payments/verify', {
                                 ...paymentData,
                                 orderType: 'LAB_TEST',
                                 orderId: orderId
