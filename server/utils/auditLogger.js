@@ -1,4 +1,4 @@
-const AuditLog = require('../models/AuditLog');
+const logger = require('./logger');
 
 const logAudit = async (req, auditData) => {
     try {
@@ -19,7 +19,7 @@ const logAudit = async (req, auditData) => {
         });
 
     } catch (error) {
-        console.error('Audit Log Error:', error);
+        logger.error('Audit Log Error', { error: error.message });
         // Don't crash application if logging fails
     }
 };

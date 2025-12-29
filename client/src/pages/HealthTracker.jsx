@@ -2,19 +2,25 @@ import React, { useState, useEffect } from 'react';
 import toast from 'react-hot-toast';
 import axios from '../utils/axiosInstance';
 import Navbar from '../components/Navbar';
-import { Activity, Droplet, Heart, Scale, TrendingUp, Sparkles, Ruler, Flame, Utensils } from 'lucide-react';
+import { Activity, Droplet, Heart, Scale, TrendingUp, Sparkles, Ruler, Flame, Utensils, Trash2 } from 'lucide-react';
 import HealthMetricChart from '../components/HealthMetricChart';
 import HealthAIInsights from '../components/HealthAIInsights';
 import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
+import Modal from '../components/ui/Modal';
 
 const HealthTracker = () => {
     const [activeTab, setActiveTab] = useState('GLUCOSE');
     const [hoveredTab, setHoveredTab] = useState(null);
     const [metrics, setMetrics] = useState([]);
     const [loading, setLoading] = useState(false);
+
+    // Delete Modal State
+    const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+    const [deleteId, setDeleteId] = useState(null);
+    const [deleting, setDeleting] = useState(false);
 
     // AI State
     const [aiInsights, setAiInsights] = useState(null);
@@ -139,6 +145,35 @@ const HealthTracker = () => {
             toast.error('Failed to save reading. Please check your inputs.');
         } finally {
             setSubmitting(false);
+        }
+    };
+
+    const initiateDelete = (id) => {
+        setDeleteId(id);
+        setIsDeleteModalOpen(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteId) return;
+        setDeleting(true);
+
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`http://localhost:5000/api/v1/health-metrics/${deleteId}`, {
+                headers: { Authorization: `Bearer ${token} ` },
+                withCredentials: true
+            });
+
+            toast.success('Record deleted');
+            // Remove from local state immediately
+            setMetrics(prev => prev.filter(m => m._id !== deleteId));
+        } catch (error) {
+            console.error('Error deleting metric:', error);
+            toast.error('Failed to delete record');
+        } finally {
+            setDeleting(false);
+            setIsDeleteModalOpen(false);
+            setDeleteId(null);
         }
     };
 
@@ -296,14 +331,21 @@ p - 4 rounded - xl text - left transition - all duration - 200 border
                                                 </div >
                                                 <p className="text-sm text-text-muted mt-1">{new Date(metric.recordedAt).toLocaleString()}</p>
                                             </div >
-                                            {
-                                                metric.note && (
+                                            <div className="flex items-center gap-2">
+                                                {metric.note && (
                                                     <span className="text-sm text-text-secondary bg-white dark:bg-surface px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-700">
                                                         {metric.note}
                                                     </span>
-                                                )
-                                            }
-                                        </div >
+                                                )}
+                                                <button
+                                                    onClick={() => initiateDelete(metric._id)}
+                                                    className="p-2 text-text-muted hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
+                                                    title="Delete record"
+                                                >
+                                                    <Trash2 size={16} />
+                                                </button>
+                                            </div>
+                                        </div>
                                     ))}
                                 </div >
                             )}
@@ -319,6 +361,34 @@ p - 4 rounded - xl text - left transition - all duration - 200 border
                         </div>
                     )
                 }
+                {/* Delete Confirmation Modal */}
+                <Modal
+                    isOpen={isDeleteModalOpen}
+                    onClose={() => setIsDeleteModalOpen(false)}
+                    title="Confirm Deletion"
+                >
+                    <div className="space-y-4">
+                        <p className="text-text-secondary">
+                            Are you sure you want to delete this health record? This action cannot be undone.
+                        </p>
+                        <div className="flex justify-end gap-3 mt-6">
+                            <Button
+                                variant="ghost"
+                                onClick={() => setIsDeleteModalOpen(false)}
+                                disabled={deleting}
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                variant="danger"
+                                onClick={confirmDelete}
+                                isLoading={deleting}
+                            >
+                                Delete Record
+                            </Button>
+                        </div>
+                    </div>
+                </Modal>
             </div >
         </div >
     );

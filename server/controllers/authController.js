@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const { StreamChat } = require('stream-chat');
 const RefreshToken = require('../models/RefreshToken');
 const logAudit = require('../utils/auditLogger');
+const logger = require('../utils/logger');
 
 const streamClient = new StreamChat(process.env.STREAM_API_KEY, process.env.STREAM_API_SECRET);
 
@@ -115,7 +116,7 @@ exports.signup = async (req, res) => {
         createSendToken(user, 201, res);
 
     } catch (error) {
-        console.error('Signup Error:', error);
+        logger.error('Signup Error', { error: error.message, stack: error.stack });
         res.status(500).json({ message: error.message });
     }
 };

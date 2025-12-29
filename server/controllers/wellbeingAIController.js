@@ -3,6 +3,8 @@ const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { isCrisis } = require('../utils/crisisDetection');
 const wellBeingSystemPrompt = require('../ai/systemPrompts/wellbeingPrompt');
+const { validateAndSanitize } = require('../utils/aiSecurity');
+const logger = require('../utils/logger');
 
 // Initialize Gemini
 // Note: We create the client inside the handler or globally. 
@@ -35,8 +37,12 @@ exports.handleMessage = catchAsync(async (req, res, next) => {
         return next(new AppError('Message content is required', 400));
     }
 
+    // Security: Advanced Prompt Injection Defense (Validation & Sanitization)
+    // Will throw AppError if malicious
+    const cleanMessage = validateAndSanitize(message);
+
     // 1. CRISIS DETECTION (Rule-based Pre-check)
-    if (isCrisis(message)) {
+    if (isCrisis(cleanMessage)) {
         return res.status(200).json({
             status: 'success',
             data: {
@@ -58,7 +64,7 @@ exports.handleMessage = catchAsync(async (req, res, next) => {
     // 2. GEMINI INTERACTION
     try {
         const genAI = getGeminiClient();
-        if (!genAI) throw new Error("API Key missing");
+        if (!genAI) return next(new AppError("API Key missing", 500));
 
         const model = getGeminiModel(genAI);
 
@@ -94,7 +100,7 @@ exports.handleMessage = catchAsync(async (req, res, next) => {
         });
 
     } catch (error) {
-        console.error("Gemini Error:", error.message);
+        logger.error("Gemini Error", { error: error.message });
 
         // FAILOVER: Return a simulated response so the UI works
         const randomFallback = FALLBACK_RESPONSES[Math.floor(Math.random() * FALLBACK_RESPONSES.length)];

@@ -106,7 +106,14 @@ const HealthAIInsights = ({ data, loading }) => {
 
             {/* Motivation & Safety */}
             <div className="space-y-4">
-                <div className="flex gap-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-blue-800 dark:text-blue-200 text-sm italic">
+                <style>
+                    {`
+                        .motivational-box { color: #000000 !important; }
+                        :global(.dark) .motivational-box { color: #ffffff !important; }
+                        .dark .motivational-box { color: #ffffff !important; }
+                    `}
+                </style>
+                <div className="motivational-box flex gap-4 p-4 rounded-xl bg-blue-50 dark:bg-blue-900/20 text-sm font-medium">
                     <div className="flex-shrink-0 mt-1"><Sparkles size={16} /></div>
                     "{data.motivational_message}"
                 </div>

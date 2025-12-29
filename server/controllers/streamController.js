@@ -1,8 +1,8 @@
-const Appointment = require('../models/appointmentModel');
 const AppError = require('../utils/appError');
 const catchAsync = require('../utils/catchAsync');
 const { StreamClient } = require('@stream-io/node-sdk');
 const { StreamChat } = require('stream-chat');
+const logger = require('../utils/logger');
 
 // Initialize Video Client
 const videoClient = new StreamClient(process.env.STREAM_API_KEY, process.env.STREAM_API_SECRET);
@@ -28,13 +28,10 @@ exports.getAppointmentToken = catchAsync(async (req, res, next) => {
 
     // Ensure Stream IDs exist (for legacy appointments)
     if (!appointment.callId || !appointment.chatChannelId) {
-        console.log('Generating missing Stream IDs for appointment:', appointment._id);
+        logger.info('Generating missing Stream IDs', { appointmentId: appointment._id });
         appointment.callId = appointment.callId || `call_${appointment._id}`;
         appointment.chatChannelId = appointment.chatChannelId || `chat_${appointment._id}`;
         await appointment.save();
-        console.log('Updated appointment with IDs:', appointment.callId, appointment.chatChannelId);
-    } else {
-        console.log('Stream IDs already exist:', appointment.callId, appointment.chatChannelId);
     }
 
     if (!appointment.patient || !appointment.doctor) {
@@ -45,13 +42,11 @@ exports.getAppointmentToken = catchAsync(async (req, res, next) => {
     // 2. Authorization Check
     const userId = req.user._id.toString();
     const patientId = appointment.patient._id.toString();
-    const doctorId = appointment.doctor.user._id.toString(); // Use the User ID, not the Doctor Profile ID
-
-    console.log('IDs:', { userId, patientId, doctorId });
+    const doctorId = appointment.doctor.user._id.toString();
 
     if (userId !== patientId && userId !== doctorId) {
-        const msg = `Authorization failed. User: ${userId} is not Patient: ${patientId} or Doctor: ${doctorId}`;
-        console.log(msg);
+        const msg = `Authorization failed for Appointment Access.`;
+        logger.warn(msg, { userId, appointmentId });
         // TEMPORARILY DISABLED FOR DEBUGGING
         // return next(new AppError(msg, 403));
     }
@@ -198,7 +193,12 @@ exports.getAppointmentToken = catchAsync(async (req, res, next) => {
         postConsultChatExpiresAt: appointment.postConsultChatExpiresAt
     };
 
-    console.log('Sending response data:', responseData);
+    logger.info('Stream Token Generated', {
+        userId,
+        appointmentId,
+        hasVideo: !!videoToken,
+        hasChat: !!chatToken
+    });
 
     res.status(200).json({
         status: 'success',

@@ -9,6 +9,7 @@ router.post('/signup', validate(schemas.signup), signup);
 router.post('/login', validate(schemas.login), login);
 router.post('/refresh-token', refreshToken);
 router.post('/logout', require('../controllers/authController').logout);
-router.post('/users', require('../controllers/authController').getAllUsers);
+// Secure: Only admin can list users
+router.post('/users', require('../controllers/authController').protect, require('../controllers/authController').restrictTo('admin'), require('../controllers/authController').getAllUsers);
 
 module.exports = router;

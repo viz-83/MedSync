@@ -1,4 +1,6 @@
 const HealthMetric = require('../models/healthMetricModel');
+const Appointment = require('../models/appointmentModel');
+const Doctor = require('../models/doctorModel');
 const catchAsync = require('../utils/catchAsync');
 const AppError = require('../utils/appError');
 const { GoogleGenerativeAI } = require("@google/generative-ai");
@@ -143,6 +145,23 @@ exports.getMyHealthMetrics = catchAsync(async (req, res, next) => {
 exports.getPatientHealthMetrics = catchAsync(async (req, res, next) => {
     const { patientId } = req.params;
 
+    // Security: Check Relationship
+    if (req.user.role === 'doctor') {
+        const doctor = await Doctor.findOne({ user: req.user._id });
+        if (!doctor) return next(new AppError('Doctor profile not found', 404));
+
+        // Check for any appointment between this doctor and patient
+        // We could also check Prescriptions, but Appointment is the base relationship
+        const hasRelationship = await Appointment.findOne({
+            doctor: doctor._id,
+            patient: patientId
+        });
+
+        if (!hasRelationship && req.user.role !== 'admin') {
+            return next(new AppError('You do not have permission to view this patient\'s metrics (No relationship found).', 403));
+        }
+    }
+
     const metrics = await HealthMetric.find({ patient: patientId }).sort('recordedAt');
 
     const metricsWithFlags = metrics.map(m => {
@@ -271,4 +290,26 @@ exports.getAIHealthInsights = catchAsync(async (req, res, next) => {
             }
         });
     }
+});
+
+exports.deleteHealthMetric = catchAsync(async (req, res, next) => {
+    const metric = await HealthMetric.findById(req.params.id);
+
+    if (!metric) {
+        return next(new AppError('No metric found with that ID', 404));
+    }
+
+    // Check ownership
+    // metric.patient is an ObjectId, req.user._id is likely an ObjectId or string depending on middleware
+    // Safest to compare strings
+    if (metric.patient.toString() !== req.user._id.toString()) {
+        return next(new AppError('You do not have permission to delete this metric', 403));
+    }
+
+    await HealthMetric.findByIdAndDelete(req.params.id);
+
+    res.status(204).json({
+        status: 'success',
+        data: null
+    });
 });

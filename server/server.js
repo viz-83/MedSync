@@ -11,6 +11,25 @@ const globalErrorHandler = require('./controllers/errorController');
 
 dotenv.config();
 
+// Strict Environment Validation
+const requiredEnvs = [
+    'NODE_ENV',
+    'MONGO_URI',
+    'JWT_SECRET',
+    'STREAM_API_KEY',
+    'STREAM_API_SECRET',
+    'GEMINI_API_KEY',
+    'RAZORPAY_KEY_ID',
+    'RAZORPAY_KEY_SECRET'
+];
+
+const missingEnvs = requiredEnvs.filter(env => !process.env[env]);
+
+if (missingEnvs.length > 0) {
+    console.error('FATAL: Missing required environment variables:', missingEnvs.join(', '));
+    process.exit(1);
+}
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -67,20 +86,22 @@ app.get('/test-root', (req, res) => {
 
 app.use(cookieParser());
 
+const logger = require('./utils/logger');
+
 // Request Logger
 app.use((req, res, next) => {
-    console.log(`${req.method} ${req.url}`);
+    logger.info(`Incoming Request`, { method: req.method, url: req.url });
     next();
 });
 
 // Database Connection
 mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log('MongoDB Connected'))
-    .catch(err => console.error('MongoDB Connection Error:', err));
+    .then(() => logger.info('MongoDB Connected'))
+    .catch(err => logger.error('MongoDB Connection Error', { error: err.message }));
 
 // Routes
 app.use((req, res, next) => {
-    console.log(`[Server] Incoming Request: ${req.method} ${req.url}`);
+    // logger.debug(`[Server] Routing`, { method: req.method, url: req.url });
     next();
 });
 
@@ -112,6 +133,10 @@ app.use('/api/v1/wellbeing', require('./routes/wellbeingRoutes')); // Wellbeing 
 
 app.get('/', (req, res) => {
     res.send('MedSync API is running...');
+});
+
+app.get('/health', (req, res) => {
+    res.status(200).json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
 // 404 Handler
