@@ -1,4 +1,5 @@
 const logger = require('./logger');
+const AuditLog = require('../models/AuditLog');
 
 const logAudit = async (req, auditData) => {
     try {
