@@ -3,6 +3,7 @@ const catchAsync = require('../utils/catchAsync');
 const { StreamClient } = require('@stream-io/node-sdk');
 const { StreamChat } = require('stream-chat');
 const logger = require('../utils/logger');
+const Appointment = require('../models/Appointment');
 
 // Initialize Video Client
 const videoClient = new StreamClient(process.env.STREAM_API_KEY, process.env.STREAM_API_SECRET);
