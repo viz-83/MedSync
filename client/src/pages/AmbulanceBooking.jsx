@@ -6,6 +6,7 @@ import Card from '../components/ui/Card';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import { FaAmbulance, FaMapMarkerAlt, FaPhoneAlt, FaArrowLeft, FaCheckCircle, FaExclamationTriangle } from 'react-icons/fa';
+import Badge from '../components/ui/Badge';
 
 const AmbulanceBooking = () => {
     const navigate = useNavigate();
