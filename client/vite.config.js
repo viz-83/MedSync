@@ -9,10 +9,10 @@ export default defineConfig({
     rollupOptions: {
       output: {
         manualChunks: {
-          vendor: ['react', 'react-dom', 'react-router-dom', 'axios'],
-          ui: ['@headlessui/react', 'framer-motion', 'react-icons'],
-          stream: ['stream-chat', 'stream-chat-react'],
-          charts: ['recharts', 'chart.js', 'react-chartjs-2']
+          vendor: ['react', 'react-dom', 'react-router-dom', 'axios', 'date-fns'],
+          ui: ['react-icons', 'lucide-react', 'react-hot-toast'],
+          stream: ['stream-chat-react', '@stream-io/video-react-sdk'],
+          charts: ['recharts']
         }
       }
     }
