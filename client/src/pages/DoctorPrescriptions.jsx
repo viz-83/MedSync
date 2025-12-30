@@ -104,7 +104,7 @@ const DoctorPrescriptions = () => {
                                     <div className="mt-auto border-t border-gray-50 pt-4 flex gap-3">
                                         {script.pdfUrl && (
                                             <a
-                                                href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')}${script.pdfUrl}`}
+                                                href={`${(import.meta.env.VITE_API_URL || 'http://localhost:5000/api').replace(/\/api\/?$/, '')}${script.pdfUrl}?token=${localStorage.getItem('token')}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="flex-1"

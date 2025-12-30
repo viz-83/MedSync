@@ -93,7 +93,7 @@ const ViewReportsDoctor = () => {
 
                                     <div className="flex gap-2 w-full sm:w-auto">
                                         <a
-                                            href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/v1/reports/download/${report._id}`}
+                                            href={`${import.meta.env.VITE_API_URL || 'http://localhost:5000/api'}/v1/reports/download/${report._id}?token=${localStorage.getItem('token')}`}
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="flex-1 sm:flex-none"
