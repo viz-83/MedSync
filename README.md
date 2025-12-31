@@ -47,19 +47,19 @@ MedSync is a comprehensive healthcare application that bridges the gap between p
 
 ```mermaid
 graph TD
-    Client[Client (React/Vite)] -->|HTTP/REST| API[API Gateway (Express)]
-    Client -->|WebSocket| Stream[Stream.io (Video/Chat)]
+    Client["Client (React/Vite)"] -->|HTTP/REST| API["API Gateway (Express)"]
+    Client -->|WebSocket| Stream["Stream.io (Video/Chat)"]
     
     subgraph Backend Services
-        API --> Auth[Auth Service]
-        API --> Consult[Consultation Service]
-        API --> Health[Health Metrics Service]
+        API --> Auth["Auth Service"]
+        API --> Consult["Consultation Service"]
+        API --> Health["Health Metrics Service"]
     end
     
-    Health -->|Prompt Engineering| Gemini[Google Gemini AI]
-    Consult -->|Payment Intent| Razorpay[Razorpay Gateway]
+    Health -->|Prompt Engineering| Gemini["Google Gemini AI"]
+    Consult -->|Payment Intent| Razorpay["Razorpay Gateway"]
     
-    API --> DB[(MongoDB Atlas)]
+    API --> DB[("MongoDB Atlas")]
 ```
 
 ---
