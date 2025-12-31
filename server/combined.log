@@ -95,3 +95,16 @@
 {"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T10:46:05.652Z","url":"/api/v1/medicines?isActive=true"}
 {"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T10:46:06.579Z","url":"/api/v1/tests"}
 {"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T10:46:06.610Z","url":"/api/v1/tests"}
+{"level":"info","message":"MongoDB Connected","service":"medsync-api","timestamp":"2025-12-30T12:58:59.651Z"}
+{"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T12:59:35.314Z","url":"/api/v1/tests"}
+{"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T12:59:35.360Z","url":"/api/v1/tests"}
+{"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T12:59:35.638Z","url":"/api/v1/tests"}
+{"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T12:59:35.698Z","url":"/api/v1/tests"}
+{"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T12:59:44.158Z","url":"/api/v1/tests"}
+{"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T12:59:44.192Z","url":"/api/v1/tests"}
+{"level":"info","message":"Incoming Request","method":"POST","service":"medsync-api","timestamp":"2025-12-30T13:02:05.389Z","url":"/api/auth/login"}
+{"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T13:02:06.076Z","url":"/api/v1/tests"}
+{"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T13:02:06.106Z","url":"/api/v1/tests"}
+{"level":"info","message":"Incoming Request","method":"POST","service":"medsync-api","timestamp":"2025-12-30T13:19:46.180Z","url":"/api/auth/login"}
+{"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T13:19:46.813Z","url":"/api/v1/tests"}
+{"level":"info","message":"Incoming Request","method":"GET","service":"medsync-api","timestamp":"2025-12-30T13:19:46.846Z","url":"/api/v1/tests"}
